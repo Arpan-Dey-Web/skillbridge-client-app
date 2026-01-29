@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { Menu } from "lucide-react";
-
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   NavigationMenu,
@@ -55,7 +55,7 @@ const Navbar = ({
     url: "/",
     src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-icon.svg",
     alt: "logo",
-    title: "Blog App",
+    title: "Skill Bridge",
   },
   menu = [
     { title: "Home", url: "/" },
@@ -69,117 +69,105 @@ const Navbar = ({
   },
   className,
 }: NavbarProps) => {
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Monitor scroll position
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 20);
+    };
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
   return (
-    <section className={cn("py-4", className)}>
-      <div className=" ">
-        {/* Desktop Menu */}
-        <nav className="hidden items-center justify-between lg:flex">
-          <div className="flex items-center gap-6">
-            {/* Logo */}
-            <Link href={logo.url} className="flex items-center gap-2">
-              <img
-                src={logo.src}
-                className="max-h-8 dark:invert"
-                alt={logo.alt}
-              />
-              <span className="text-lg font-semibold tracking-tighter">
-                {logo.title}
-              </span>
-            </Link>
-            <div className="flex items-center">
-              <NavigationMenu>
-                <NavigationMenuList>
-                  {menu.map((item) => renderMenuItem(item))}
-                </NavigationMenuList>
-              </NavigationMenu>
-            </div>
+    // 1. Sticky Wrapper: Keeps navbar at top during scroll
+    <header
+      className={cn(
+        "sticky top-0 z-50 w-full transition-all duration-300 ease-in-out",
+        isScrolled ? "pt-4" : "pt-0",
+        className,
+      )}
+    >
+      <nav
+        className={cn(
+          "mx-auto transition-all duration-300 ease-in-out  flex items-center justify-between",
+          // Dynamic classes based on scroll state
+          isScrolled
+            ? "max-w-5xl rounded-2xl  bg-background/80 backdrop-blur-md shadow-lg px-6 py-3"
+            : "max-w-full border-transparent bg-background px-8 py-5",
+        )}
+      >
+        {/* Left: Logo */}
+        <Link href={logo.url} className="flex items-center gap-2 shrink-0">
+          <div
+            className={cn(
+              "bg-primary rounded-lg p-1 transition-all",
+              isScrolled ? "size-7" : "size-8",
+            )}
+          >
+            <img src={logo.src}
+              className="invert"
+              alt={logo.alt} />
           </div>
-          <div className="flex gap-2">
+          <span
+            className={cn(
+              "font-bold tracking-tight text-foreground transition-all",
+              isScrolled ? "text-lg" : "text-xl",
+            )}
+          >
+            {logo.title}
+          </span>
+        </Link>
 
-            <Button asChild variant="outline" size="sm">
-              <Link href={auth.login.url}>{auth.login.title}</Link>
-            </Button>
-            <Button asChild size="sm">
-              <Link href={auth.signup.url}>{auth.signup.title}</Link>
-            </Button>
-          </div>
-        </nav>
-
-        {/* Mobile Menu */}
-        <div className="block lg:hidden">
-          <div className="flex items-center justify-between">
-            {/* Logo */}
-            <Link href={logo.url} className="flex items-center gap-2">
-              <img
-                src={logo.src}
-                className="max-h-8 dark:invert"
-                alt={logo.alt}
-              />
-            </Link>
-            <Sheet>
-              <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Menu className="size-4" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent className="overflow-y-auto">
-                <SheetHeader>
-                  <SheetTitle>
-                    <Link href={logo.url} className="flex items-center gap-2">
-                      <img
-                        src={logo.src}
-                        className="max-h-8 dark:invert"
-                        alt={logo.alt}
-                      />
+        {/* Center: Links (Hidden on mobile) */}
+        <div className="hidden lg:flex flex-1 justify-center">
+          <NavigationMenu>
+            <NavigationMenuList className="gap-2">
+              {menu.map((item) => (
+                <NavigationMenuItem key={item.title}>
+                  <NavigationMenuLink asChild>
+                    <Link
+                      href={item.url}
+                      className="px-4 py-2 text-sm font-medium hover:text-primary transition-colors"
+                    >
+                      {item.title}
                     </Link>
-                  </SheetTitle>
-                </SheetHeader>
-                <div className="flex flex-col gap-6 p-4">
-                  <Accordion
-                    type="single"
-                    collapsible
-                    className="flex w-full flex-col gap-4"
-                  >
-                    {menu.map((item) => renderMobileMenuItem(item))}
-                  </Accordion>
+                  </NavigationMenuLink>
+                </NavigationMenuItem>
+              ))}
+            </NavigationMenuList>
+          </NavigationMenu>
+        </div>
 
-                  <div className="flex flex-col gap-3">
-                    <Button asChild variant="outline">
-                      <Link href={auth.login.url}>{auth.login.title}</Link>
-                    </Button>
-                    <Button asChild>
-                      <Link href={auth.signup.url}>{auth.signup.title}</Link>
-                    </Button>
-                  </div>
-                </div>
-              </SheetContent>
+        {/* Right: Auth Buttons */}
+        <div className="flex items-center gap-3 shrink-0">
+          <Button
+            asChild
+            variant="ghost"
+            size="sm"
+            className="hidden sm:inline-flex"
+          >
+            <Link href={auth.login.url}>{auth.login.title}</Link>
+          </Button>
+          <Button
+            asChild
+            size={isScrolled ? "sm" : "default"}
+            className="bg-primary hover:bg-primary/90 rounded-xl"
+          >
+            <Link href={auth.signup.url}>{auth.signup.title}</Link>
+          </Button>
+
+          {/* Mobile Menu Trigger */}
+          <div className="lg:hidden">
+            <Sheet>
+              {/* ... Keep your existing SheetTrigger and Content */}
             </Sheet>
           </div>
         </div>
-      </div>
-    </section>
+      </nav>
+    </header>
   );
 };
 
-const renderMenuItem = (item: MenuItem) => {
-  return (
-    <NavigationMenuItem key={item.title}>
-      <NavigationMenuLink
-        asChild
-        href={item.url}
-        className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-accent-foreground"
-      >
-        <Link href={item.url}>{item.title}</Link>
-      </NavigationMenuLink>
-    </NavigationMenuItem>
-  );
-};
 
-const renderMobileMenuItem = (item: MenuItem) => {
-  return (
-    <Link key={item.title} href={item.url} className="text-md font-semibold">
-      {item.title}
-    </Link>
-  );
-};
 export { Navbar };

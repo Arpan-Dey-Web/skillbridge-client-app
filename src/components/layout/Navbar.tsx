@@ -43,7 +43,7 @@ interface NavbarProps {
       title: string;
       url: string;
     };
-    signup: {
+    register: {
       title: string;
       url: string;
     };
@@ -65,7 +65,7 @@ const Navbar = ({
   ],
   auth = {
     login: { title: "Login", url: "/login" },
-    signup: { title: "Register", url: "/register" },
+    register: { title: "Register", url: "/register" },
   },
   className,
 }: NavbarProps) => {
@@ -84,16 +84,16 @@ const Navbar = ({
     <header
       className={cn(
         "sticky top-0 z-50 w-full transition-all duration-300 ease-in-out",
-        isScrolled ? "pt-4" : "pt-0",
+        isScrolled ? "pt-4" : "pt-0", // Add spacing when scrolled
         className,
       )}
     >
       <nav
         className={cn(
-          "mx-auto transition-all duration-300 ease-in-out  flex items-center justify-between",
+          "mx-auto transition-all duration-300 ease-in-out border-b flex items-center justify-between",
           // Dynamic classes based on scroll state
           isScrolled
-            ? "max-w-5xl rounded-2xl  bg-background/80 backdrop-blur-md shadow-lg px-6 py-3"
+            ? "max-w-5xl rounded-2xl border bg-background/80 backdrop-blur-md shadow-lg px-6 py-3"
             : "max-w-full border-transparent bg-background px-8 py-5",
         )}
       >
@@ -105,9 +105,7 @@ const Navbar = ({
               isScrolled ? "size-7" : "size-8",
             )}
           >
-            <img src={logo.src}
-              className="invert"
-              alt={logo.alt} />
+            <img src={logo.src} className="invert" alt={logo.alt} />
           </div>
           <span
             className={cn(
@@ -120,7 +118,7 @@ const Navbar = ({
         </Link>
 
         {/* Center: Links (Hidden on mobile) */}
-        <div className="hidden lg:flex flex-1 justify-center">
+        <div className="hidden md:flex flex-1 justify-center">
           <NavigationMenu>
             <NavigationMenuList className="gap-2">
               {menu.map((item) => (
@@ -152,15 +150,55 @@ const Navbar = ({
           <Button
             asChild
             size={isScrolled ? "sm" : "default"}
-            className="bg-primary hover:bg-primary/90 rounded-xl"
+            className="bg-primary hover:bg-primary/90 rounded-xl hidden sm:inline-flex"
           >
-            <Link href={auth.signup.url}>{auth.signup.title}</Link>
+            <Link href={auth.register.url}>{auth.register.title}</Link>
           </Button>
 
           {/* Mobile Menu Trigger */}
-          <div className="lg:hidden">
+          <div className="md:hidden">
             <Sheet>
-              {/* ... Keep your existing SheetTrigger and Content */}
+              <SheetTrigger asChild>
+                <Button variant="outline" size="icon">
+                  <Menu className="size-4" />
+                </Button>
+              </SheetTrigger>
+
+              <SheetContent className="overflow-y-auto">
+                <SheetHeader>
+                  <SheetTitle>
+                    <Link href={logo.url} className="flex items-center gap-2">
+                      <img
+                        src={logo.src}
+                        className="max-h-8 dark:invert"
+                        alt={logo.alt}
+                      />
+                    </Link>
+                  </SheetTitle>
+                </SheetHeader>
+
+                <div className="flex flex-col gap-6 p-4">
+                  <Accordion
+                    type="single"
+                    collapsible
+                    className="flex w-full flex-col gap-4"
+                  >
+                    {menu.map((item) => renderMobileMenuItem(item))}
+                  </Accordion>
+
+                  <div className="flex flex-col gap-3">
+                    <Button asChild variant="outline">
+                      <Link href={auth.login.url}>{auth.login.title}</Link>
+                    </Button>
+
+                    <Button asChild>
+                      <Link href={auth.register.url}>
+                        {auth.register.title}
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </SheetContent>
             </Sheet>
           </div>
         </div>
@@ -169,5 +207,25 @@ const Navbar = ({
   );
 };
 
+const renderMenuItem = (item: MenuItem) => {
+  return (
+    <NavigationMenuItem key={item.title}>
+      <NavigationMenuLink
+        asChild
+        href={item.url}
+        className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-accent-foreground"
+      >
+        <Link href={item.url}>{item.title}</Link>
+      </NavigationMenuLink>
+    </NavigationMenuItem>
+  );
+};
 
+const renderMobileMenuItem = (item: MenuItem) => {
+  return (
+    <Link key={item.title} href={item.url} className="text-md font-semibold">
+      {item.title}
+    </Link>
+  );
+};
 export { Navbar };

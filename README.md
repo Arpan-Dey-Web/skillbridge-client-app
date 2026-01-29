@@ -70,7 +70,7 @@ SkillBridge is a full-stack web application that connects learners with expert t
 
 - Browse and search tutors by subject, rating, and price
 - Filter tutors by category
-- View detailed tutor profiles with reviews
+- View detailed tutor profiles with reviewsg
 - Landing page with featured tutors
 
 ### Student Features

@@ -1,10 +1,16 @@
-import { Button } from "@/components/ui/button";
-
+import HeroBanner from "@/components/ui/Banner";
+import { Categories } from "@/components/ui/Categories";
+import { FeaturedTutors } from "@/components/ui/FeaturedTutors";
+import { FeaturesSection } from "@/components/ui/FeaturesSection";
+import { TutorCTA } from "@/components/ui/Tutorcta";
 export default function Home() {
   return (
     <div>
-      <h1>Home Page</h1>
-      <Button>Click me</Button>
+      <HeroBanner />
+      <Categories />
+      <FeaturedTutors />
+      <FeaturesSection />
+      <TutorCTA/>
     </div>
   );
 }

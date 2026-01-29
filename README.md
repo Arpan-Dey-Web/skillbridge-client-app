@@ -22,9 +22,45 @@ SkillBridge is a full-stack web application that connects learners with expert t
 
 ---
 
-## Tech Stack
+## ⚠️ Mandatory Requirements
 
-🛠️ **See [README.md](./README.md#-tech-stack) for complete technology specifications.**
+> [!CAUTION]
+> **MANDATORY - READ CAREFULLY**
+>
+> The following **FIVE requirements are MANDATORY**:
+>
+> 1. **Homepage** - 4 meaningful sections + Navbar + Footer
+> 2. **UI/UX** - Clean, responsive design with consistent colors & spacing
+> 3. **Commits** - 30 meaningful commits (15 frontend + 15 backend)
+> 4. **Error Handling** - Validation, error messages, loading states
+> 5. **Admin Credentials** - Provide working admin email & password
+>
+> ❌ **Failure to complete any of these = 0 MARKS**
+
+---
+
+## 🛠️ Tech Stack
+
+### Frontend
+
+| Technology   | Purpose                        |
+| ------------ | ------------------------------ |
+| Next.js      | App Router, SSR/SSG            |
+| TypeScript   | Type safety                    |
+| Tailwind CSS | Styling (or any CSS framework) |
+
+### Backend
+
+| Technology        | Purpose  |
+| ----------------- | -------- |
+| Node.js + Express | REST API |
+| Postgres + Prisma | Database |
+
+### Deployment
+
+| Service       | Purpose                       |
+| ------------- | ----------------------------- |
+| Vercel/Render | Frontend & Backend deployment |
 
 ---
 
@@ -254,3 +290,10 @@ Design your own schema for the following tables:
 ## Submission
 
 📋 **See [README.md](./README.md) for submission guidelines, timeline, and marks.**
+
+
+text : #2D3748
+background: #FFFFFF
+primary: #10B981
+secondary: #D8B4FE
+accent: #ECFDF5

@@ -17,9 +17,7 @@ import { useForm } from "@tanstack/react-form";
 import { toast } from "sonner";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
-/* =========================
-   Zod Schema
-========================= */
+
 const formSchema = z.object({
   name: z.string().min(1, "This field is required"),
   email: z.email("Invalid email"),
@@ -53,7 +51,7 @@ export function RegisterForm({
         }
 
         toast.success("User Created Sucessfully", { id: toastId });
-        router.push("/", { scroll: true });
+        router.push("/login", { scroll: true });
       } catch (error) {
         console.log(error);
         toast.error("Something Went Wrong, Please try again", { id: toastId });
@@ -205,6 +203,7 @@ export function RegisterForm({
                         type="email"
                         placeholder="johndoe@example.com"
                         className="focus-visible:ring-primary"
+                        required
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
                       />

@@ -1,25 +1,70 @@
+"use client";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Field,
   FieldDescription,
+  FieldError,
   FieldGroup,
   FieldLabel,
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
+import * as z from "zod";
+import { useForm } from "@tanstack/react-form";
+import { toast } from "sonner";
+import { authClient } from "@/lib/auth-client";
+import { useRouter } from "next/navigation";
+const formSchema = z.object({
+  email: z.email("Invalid email"),
+  password: z.string().min(8, "Minimum Length is 8"),
+});
 
 export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const router = useRouter();
+  const form = useForm({
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    validators: {
+      onSubmit: formSchema,
+    },
+    onSubmit: async ({ value }) => {
+      console.log(value);
+      const toastId = toast.loading("Logging in User");
+      try {
+        const { data, error } = await authClient.signIn.email(value);
+        if (error) {
+          toast.error(error.message, { id: toastId });
+          return;
+        }
+
+        toast.success("User Logged in Sucessfully", { id: toastId });
+        router.push("/", { scroll: true });
+      } catch (error) {
+        console.log(error);
+        toast.error("Something Went Wrong, Please try again", { id: toastId });
+      }
+    },
+  });
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0 border-none shadow-xl">
         <CardContent className="grid p-0 md:grid-cols-2">
-          <form className="p-6 md:p-8 bg-white">
+          <form
+            className="p-6 md:p-8 bg-white"
+            id="login-form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              form.handleSubmit();
+            }}
+          >
             <FieldGroup className="gap-5">
               <div className="flex flex-col items-center gap-2 text-center mb-4">
                 {/* Logo Placeholder */}
@@ -34,34 +79,53 @@ export function LoginForm({
                 </p>
               </div>
 
-              <Field>
-                <FieldLabel htmlFor="email">Email</FieldLabel>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="name@student.com"
-                  className="focus-visible:ring-primary"
-                  required
-                />
-              </Field>
+              <form.Field name="email">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor="email">Email</FieldLabel>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="name@student.com"
+                        className="focus-visible:ring-primary"
+                        required
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
 
-              <Field>
-                <div className="flex items-center justify-between">
-                  <FieldLabel htmlFor="password">Password</FieldLabel>
-                  <Link
-                    href="#"
-                    className="text-xs text-primary hover:underline font-medium"
-                  >
-                    Forgot?
-                  </Link>
-                </div>
-                <Input
-                  id="password"
-                  type="password"
-                  className="focus-visible:ring-primary"
-                  required
-                />
-              </Field>
+              {/* PASSWORD */}
+              <form.Field name="password">
+                {(field) => {
+                  const isInvalid =
+                    field.state.meta.isTouched && !field.state.meta.isValid;
+
+                  return (
+                    <Field data-invalid={isInvalid}>
+                      <FieldLabel htmlFor="password">Password</FieldLabel>
+                      <Input
+                        id="password"
+                        type="password"
+                        className="focus-visible:ring-primary"
+                        value={field.state.value}
+                        onChange={(e) => field.handleChange(e.target.value)}
+                      />
+                      {isInvalid && (
+                        <FieldError errors={field.state.meta.errors} />
+                      )}
+                    </Field>
+                  );
+                }}
+              </form.Field>
 
               <Field className="pt-2">
                 {/* Applied your #10B981 Mint Green here */}
@@ -114,7 +178,7 @@ export function LoginForm({
           <div className="bg-accent relative hidden md:flex items-center justify-center p-12">
             <div className="relative z-10 text-center">
               <h2 className="text-3xl font-bold text-foreground mb-4 italic">
-                "Learning is a bridge to your future."
+                Learning is a bridge to your future
               </h2>
               <div className="h-1 w-20 bg-primary mx-auto rounded-full" />
             </div>

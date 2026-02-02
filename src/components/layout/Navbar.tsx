@@ -19,6 +19,16 @@ import {
   SheetTrigger,
 } from "../ui/sheet";
 import { Accordion } from "../ui/accordion";
+import { authClient } from "@/lib/auth-client";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "../ui/dropdown-menu";
 
 interface MenuItem {
   title: string;
@@ -71,6 +81,9 @@ const Navbar = ({
 }: NavbarProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
+  const { data: session, isPending, error } = authClient.useSession();
+  console.log(session?.user, isPending, error);
+
   // Monitor scroll position
   useEffect(() => {
     const handleScroll = () => {
@@ -79,6 +92,10 @@ const Navbar = ({
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  const handleLogOut = async () => {
+    await authClient.signOut();
+  };
   return (
     // 1. Sticky Wrapper: Keeps navbar at top during scroll
     <header
@@ -139,21 +156,44 @@ const Navbar = ({
 
         {/* Right: Auth Buttons */}
         <div className="flex items-center gap-3 shrink-0">
-          <Button
-            asChild
-            variant="ghost"
-            size="sm"
-            className="hidden sm:inline-flex"
-          >
-            <Link href={auth.login.url}>{auth.login.title}</Link>
-          </Button>
-          <Button
-            asChild
-            size={isScrolled ? "sm" : "default"}
-            className="bg-primary hover:bg-primary/90 rounded-xl hidden sm:inline-flex"
-          >
-            <Link href={auth.register.url}>{auth.register.title}</Link>
-          </Button>
+          {session?.user ? (
+            <div className="flex gap-2">
+              <Avatar className="h-10 w-10 border-2 border-primary/10">
+                <AvatarImage
+                  src={session.user.image || ""}
+                  alt={session.user.name || "User"}
+                />
+                <AvatarFallback className="bg-secondary/20 text-secondary-foreground">
+                  {session.user.name?.slice(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+
+              <Button
+                onClick={() => handleLogOut()}
+                className="bg-red-400 rounded-2xl"
+              >
+                Log Out{" "}
+              </Button>
+            </div>
+          ) : (
+            <>
+              <Button
+                asChild
+                variant="ghost"
+                size="sm"
+                className="hidden sm:inline-flex"
+              >
+                <Link href={auth.login.url}>{auth.login.title}</Link>
+              </Button>
+              <Button
+                asChild
+                size={isScrolled ? "sm" : "default"}
+                className="bg-primary hover:bg-primary/90 rounded-xl hidden sm:inline-flex"
+              >
+                <Link href={auth.register.url}>{auth.register.title}</Link>
+              </Button>
+            </>
+          )}
 
           {/* Mobile Menu Trigger */}
           <div className="md:hidden">
@@ -206,8 +246,6 @@ const Navbar = ({
     </header>
   );
 };
-
-
 
 const renderMobileMenuItem = (item: MenuItem) => {
   return (

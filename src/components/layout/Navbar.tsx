@@ -207,19 +207,7 @@ const Navbar = ({
   );
 };
 
-const renderMenuItem = (item: MenuItem) => {
-  return (
-    <NavigationMenuItem key={item.title}>
-      <NavigationMenuLink
-        asChild
-        href={item.url}
-        className="group inline-flex h-10 w-max items-center justify-center rounded-md bg-background px-4 py-2 text-sm font-medium transition-colors hover:bg-muted hover:text-accent-foreground"
-      >
-        <Link href={item.url}>{item.title}</Link>
-      </NavigationMenuLink>
-    </NavigationMenuItem>
-  );
-};
+
 
 const renderMobileMenuItem = (item: MenuItem) => {
   return (

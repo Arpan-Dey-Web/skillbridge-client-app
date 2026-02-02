@@ -53,6 +53,13 @@ export function LoginForm({
       }
     },
   });
+  const handleGoogleLogin = async () => {
+    const data = authClient.signIn.social({
+      provider: "google",
+      callbackURL: `${process.env.NEXT_PUBLIC_CLIENT_URL}/`,
+    });
+  };
+
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
       <Card className="overflow-hidden p-0 border-none shadow-xl">
@@ -128,7 +135,6 @@ export function LoginForm({
               </form.Field>
 
               <Field className="pt-2">
-                {/* Applied your #10B981 Mint Green here */}
                 <Button
                   type="submit"
                   className="w-full bg-primary hover:bg-primary/90 text-white font-semibold py-6 rounded-xl transition-all"
@@ -142,8 +148,8 @@ export function LoginForm({
               </FieldSeparator>
 
               <Field>
-                {/* Applied your #D8B4FE Lavender here */}
                 <Button
+                  onClick={() => handleGoogleLogin()}
                   variant="outline"
                   type="button"
                   className="w-full border-secondary/30 hover:bg-secondary/10 hover:text-secondary-foreground transition-colors"

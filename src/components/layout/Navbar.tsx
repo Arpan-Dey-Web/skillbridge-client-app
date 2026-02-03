@@ -21,14 +21,7 @@ import {
 import { Accordion } from "../ui/accordion";
 import { authClient } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "../ui/dropdown-menu";
+
 
 interface MenuItem {
   title: string;
@@ -71,7 +64,7 @@ const Navbar = ({
     { title: "Home", url: "/" },
     { title: "Tutors", url: "/tutors" },
     { title: "About", url: "/" },
-    { title: "Dashboard", url: "/" },
+    { title: "Dashboard", url: "/dashboard" },
   ],
   auth = {
     login: { title: "Login", url: "/login" },
@@ -81,8 +74,9 @@ const Navbar = ({
 }: NavbarProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
+
   const { data: session, isPending, error } = authClient.useSession();
-  console.log(session?.user, isPending, error);
+  
 
   // Monitor scroll position
   useEffect(() => {

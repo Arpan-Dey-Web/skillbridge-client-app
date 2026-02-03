@@ -51,7 +51,12 @@ export function RegisterForm({
         }
 
         toast.success("User Created Sucessfully", { id: toastId });
-        router.push("/login", { scroll: true });
+
+        if (value.role === "TUTOR") {
+          router.push("/dashboard/tutor/setup-profile");
+        } else {
+          router.push("/");
+        }
       } catch (error) {
         console.log(error);
         toast.error("Something Went Wrong, Please try again", { id: toastId });

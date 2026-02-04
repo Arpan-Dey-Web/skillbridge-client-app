@@ -1,101 +1,187 @@
 "use client";
+
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Check } from "lucide-react"; // Install lucide-react if you haven't
+import { authClient } from "@/lib/auth-client";
+
+import { useRouter } from "next/navigation";
 
 export default function TutorSetupPage() {
+  const { data: session, isPending, error } = authClient.useSession();
   const [categories, setCategories] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
   const [formData, setFormData] = useState({
     bio: "",
     hourlyRate: 0,
     categoryId: "",
-    subjects: "", // We will split this string into an array later
   });
 
-  // Load your 12 categories
   useEffect(() => {
     fetch("http://localhost:8000/categorie")
       .then((res) => res.json())
       .then((res) => setCategories(res.data));
   }, []);
+
+  if (isPending)
+    return (
+      <div className="flex justify-center items-center h-screen">
+        Loading Session...
+      </div>
+    );
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const toastId = toast.loading("Saving profile...");
-    console.log(formData);
+    if (!session?.user?.id) {
+      return toast.error("You must be logged in to create a profile");
+    }
+    if (!formData.categoryId) {
+      return toast.error("Please select a category");
+    }
+
+    setLoading(true);
+    const toastId = toast.loading("Creating your profile...");
 
     try {
-      const response = await fetch("http://localhost:8000/tutors/setup", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          subjects: formData.subjects.split(",").map((s) => s.trim()), // "React, Node" -> ["React", "Node"]
-          categoryId: Number(formData.categoryId),
-        }),
-      });
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_APP_URL}/tutors/setup`,
+        {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            ...formData,
+            userId: session?.user?.id,
+          }),
+        },
+      );
 
       if (response.ok) {
         toast.success("Profile Setup Complete!", { id: toastId });
-        window.location.href = "/tutor/dashboard";
+        router.push("/dashboard/tutor");
       }
     } catch (error) {
+      console.log(error);
       toast.error("Failed to update profile", { id: toastId });
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="max-w-2xl mx-auto p-8 bg-white rounded-2xl shadow-xl mt-10">
-      <h1 className="text-2xl font-bold mb-6">Setup Your Tutor Profile</h1>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* CATEGORY SELECT */}
-        <div>
-          <label className="block text-sm font-bold mb-2">
-            Primary Category
-          </label>
-          <select
-            required
-            className="w-full p-3 border rounded-xl"
-            onChange={(e) =>
-              setFormData({ ...formData, categoryId: e.target.value })
-            }
-          >
-            <option value="">Select a Category</option>
-            {categories.map((cat: any) => (
-              <option key={cat.id} value={cat.id}>
-                {cat.name}
-              </option>
-            ))}
-          </select>
-        </div>
+    <div className="min-h-screen bg-slate-50 py-12 px-4">
+      <Card className="max-w-3xl mx-auto shadow-2xl border-none rounded-3xl overflow-hidden">
+        <div className="h-2 bg-indigo-600 w-full" />
+        <CardHeader className="pt-10 pb-6 px-10 text-center">
+          <CardTitle className="text-3xl font-extrabold text-slate-900">
+            Customize Your Teaching Profile
+          </CardTitle>
+          <CardDescription className="text-lg">
+            Tell us about your expertise and set your rate.
+          </CardDescription>
+        </CardHeader>
 
-        <div>
-          <label className="block text-sm font-bold mb-2">
-            Hourly Rate ($)
-          </label>
-          <input
-            type="number"
-            className="w-full p-3 border rounded-xl"
-            onChange={(e) =>
-              setFormData({ ...formData, hourlyRate: Number(e.target.value) })
-            }
-          />
-        </div>
+        <CardContent className="px-10 pb-10">
+          <form onSubmit={handleSubmit} className="space-y-8">
+            {/* NO DROPDOWN - INTERACTIVE CATEGORY GRID */}
+            <div className="space-y-4">
+              <Label className="text-base font-bold text-slate-800">
+                Choose Your Teaching Domain
+              </Label>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                {categories.map((cat: any) => {
+                  const isSelected = formData.categoryId === cat.id;
+                  return (
+                    <div
+                      key={cat.id}
+                      onClick={() =>
+                        setFormData({ ...formData, categoryId: cat.id })
+                      }
+                      className={`relative cursor-pointer group p-4 rounded-2xl border-2 transition-all duration-200 flex flex-col items-center justify-center text-center gap-2 ${
+                        isSelected
+                          ? "border-indigo-600 bg-indigo-50 shadow-md scale-[1.02]"
+                          : "border-slate-100 bg-white hover:border-indigo-200 hover:shadow-sm"
+                      }`}
+                    >
+                      {isSelected && (
+                        <div className="absolute top-2 right-2 bg-indigo-600 rounded-full p-1">
+                          <Check className="w-3 h-3 text-white" />
+                        </div>
+                      )}
+                      <span
+                        className={`font-semibold ${isSelected ? "text-indigo-700" : "text-slate-600"}`}
+                      >
+                        {cat.name}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
 
-        <div>
-          <label className="block text-sm font-bold mb-2">Bio</label>
-          <textarea
-            className="w-full p-3 border rounded-xl"
-            rows={4}
-            onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-          />
-        </div>
+            <hr className="border-slate-100" />
 
-        <button
-          type="submit"
-          className="w-full bg-secondary text-white py-4 rounded-xl font-bold"
-        >
-          Finish Setup
-        </button>
-      </form>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <Label htmlFor="rate" className="font-bold">
+                  Hourly Rate ($)
+                </Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+                    $
+                  </span>
+                  <Input
+                    id="rate"
+                    type="number"
+                    placeholder="25.00"
+                    className="pl-8 h-12 rounded-xl bg-slate-50 border-none focus-visible:ring-indigo-600"
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        hourlyRate: Number(e.target.value),
+                      })
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="bio" className="font-bold">
+                Short Bio
+              </Label>
+              <Textarea
+                id="bio"
+                placeholder="I am an expert in my field with 5 years of teaching experience..."
+                rows={5}
+                className="rounded-2xl bg-slate-50 border-none focus-visible:ring-indigo-600 p-4"
+                onChange={(e) =>
+                  setFormData({ ...formData, bio: e.target.value })
+                }
+              />
+            </div>
+
+            <Button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-14 rounded-2xl text-lg font-bold shadow-lg shadow-indigo-200 transition-all hover:translate-y-[-2px]"
+            >
+              {loading ? "Creating Profile..." : "Publish Profile"}
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
     </div>
   );
 }

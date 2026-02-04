@@ -3,6 +3,7 @@ import HeroBanner from "@/components/ui/Banner";
 import { Categories } from "@/components/ui/Categories";
 import { FeaturedTutors } from "@/components/ui/FeaturedTutors";
 import { FeaturesSection } from "@/components/ui/FeaturesSection";
+import { Footer } from "@/components/ui/Footer";
 import { TutorCTA } from "@/components/ui/Tutorcta";
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
       <FeaturedTutors />
       <FeaturesSection />
       <TutorCTA />
+      <Footer />
     </div>
   );
 }

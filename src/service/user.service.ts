@@ -1,7 +1,6 @@
 
 import { cookies } from "next/headers";
 const AUTH_URL = process.env.AUTH_URL
-console.log(AUTH_URL);
 export const userService = {
     getSession: async function () {
         try {

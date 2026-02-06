@@ -165,6 +165,11 @@ Design your own schema for the following tables:
 | POST   | `/api/auth/login`    | Login user        |
 | GET    | `/api/auth/me`       | Get current user  |
 
+
+
+app.all('/api/auth/*splat', toNodeHandler(auth));
+
+
 ### Tutors (Public)
 
 | Method | Endpoint          | Description                 |

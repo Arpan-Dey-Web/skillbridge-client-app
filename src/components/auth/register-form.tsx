@@ -53,7 +53,7 @@ export function RegisterForm({
         toast.success("User Created Sucessfully", { id: toastId });
 
         if (value.role === "TUTOR") {
-          router.push("/dashboard/tutor/setup-profile");
+          router.push("/tutor/profile");
         } else {
           router.push("/");
         }

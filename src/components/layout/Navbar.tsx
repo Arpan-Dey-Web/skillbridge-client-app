@@ -22,7 +22,6 @@ import { Accordion } from "../ui/accordion";
 import { authClient } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
-
 interface MenuItem {
   title: string;
   url: string;
@@ -64,7 +63,7 @@ const Navbar = ({
     { title: "Home", url: "/" },
     { title: "Tutors", url: "/tutors" },
     { title: "About", url: "/" },
-    { title: "Dashboard", url: "/dashboard" },
+    { title: "Dashboard", url: "/tutor/dashboard" },
   ],
   auth = {
     login: { title: "Login", url: "/login" },
@@ -74,9 +73,7 @@ const Navbar = ({
 }: NavbarProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
 
-
   const { data: session, isPending, error } = authClient.useSession();
-  
 
   // Monitor scroll position
   useEffect(() => {

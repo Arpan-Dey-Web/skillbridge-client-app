@@ -28,9 +28,10 @@ export default function TutorSetupPage() {
     hourlyRate: 0,
     categoryId: "",
   });
-
   useEffect(() => {
-    fetch("http://localhost:8000/categorie")
+    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories`, {
+      credentials: "include",
+    })
       .then((res) => res.json())
       .then((res) => setCategories(res.data));
   }, []);
@@ -56,10 +57,11 @@ export default function TutorSetupPage() {
 
     try {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL}/tutors/setup`,
+        `${process.env.NEXT_PUBLIC_APP_URL}/api/tutor/profile`,
         {
-          method: "PATCH",
+          method: "PUT",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             ...formData,
             userId: session?.user?.id,
@@ -69,7 +71,7 @@ export default function TutorSetupPage() {
 
       if (response.ok) {
         toast.success("Profile Setup Complete!", { id: toastId });
-        router.push("/dashboard/tutor");
+        router.push("/tutor/dashboard");
       }
     } catch (error) {
       console.log(error);
@@ -80,7 +82,7 @@ export default function TutorSetupPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4">
+    <div className="min-h-screen py-12 px-4">
       <Card className="max-w-3xl mx-auto shadow-2xl border-none rounded-3xl overflow-hidden">
         <div className="h-2 bg-indigo-600 w-full" />
         <CardHeader className="pt-10 pb-6 px-10 text-center">
@@ -100,7 +102,7 @@ export default function TutorSetupPage() {
                 Choose Your Teaching Domain
               </Label>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                {categories.map((cat: any) => {
+                {categories?.map((cat: any) => {
                   const isSelected = formData.categoryId === cat.id;
                   return (
                     <div
@@ -175,7 +177,7 @@ export default function TutorSetupPage() {
             <Button
               type="submit"
               disabled={loading}
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-14 rounded-2xl text-lg font-bold shadow-lg shadow-indigo-200 transition-all hover:translate-y-[-2px]"
+              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white h-14 rounded-2xl text-lg font-bold shadow-lg shadow-indigo-200 transition-all hover:-translate-y-0.5"
             >
               {loading ? "Creating Profile..." : "Publish Profile"}
             </Button>

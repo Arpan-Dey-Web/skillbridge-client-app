@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
+import "../globals.css";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/ui/Footer";
 import { Toaster } from "sonner";
@@ -30,8 +30,10 @@ export default function RootLayout({
       <body
         className={`w-11/12  mx-auto ${geistSans.variable} ${geistMono.variable} antialiased `}
       >
+        <Navbar  />
         {children}
         <Toaster />
+        <Footer />
       </body>
     </html>
   );

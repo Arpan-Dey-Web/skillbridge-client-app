@@ -3,6 +3,10 @@ export const tutorRoutes = [
         title: "Tutor Dashboard",
         items: [
             {
+                title: "Home",
+                url: "/",
+            },
+            {
                 title: "Tutor Dashboard",
                 url: "/tutor/dashboard",
             },

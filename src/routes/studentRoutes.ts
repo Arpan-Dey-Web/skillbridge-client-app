@@ -3,6 +3,10 @@ export const studentRoutes = [
         title: "Student Dashboard",
         items: [
             {
+                title: "Home",
+                url: "/",
+            },
+            {
                 title: "Student Dashboard",
                 url: "/dashboard",
             },

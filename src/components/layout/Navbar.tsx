@@ -1,233 +1,143 @@
 "use client";
-
 import { cn } from "@/lib/utils";
-import { Menu } from "lucide-react";
+import { Menu, LogOut, Sparkles } from "lucide-react";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import {
-  NavigationMenu,
-  NavigationMenuItem,
-  NavigationMenuLink,
-  NavigationMenuList,
-} from "../ui/navigation-menu";
+import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";
 import {
   Sheet,
   SheetContent,
-  SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
-import { Accordion } from "../ui/accordion";
+
 import { authClient } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-
-interface MenuItem {
-  title: string;
-  url: string;
-  description?: string;
-  icon?: React.ReactNode;
-  items?: MenuItem[];
-}
-
-interface NavbarProps {
-  className?: string;
-  logo?: {
-    url: string;
-    src: string;
-    alt: string;
-    title: string;
-    className?: string;
-  };
-  menu?: MenuItem[];
-  auth?: {
-    login: {
-      title: string;
-      url: string;
-    };
-    register: {
-      title: string;
-      url: string;
-    };
-  };
-}
+import Image from "next/image";
 
 const Navbar = ({
-  logo = {
-    url: "/",
-    src: "https://deifkwefumgah.cloudfront.net/shadcnblocks/block/logos/shadcnblockscom-icon.svg",
-    alt: "logo",
-    title: "Skill Bridge",
-  },
   menu = [
     { title: "Home", url: "/" },
     { title: "Tutors", url: "/tutors" },
-    { title: "About", url: "/" },
+    { title: "About", url: "/about" },
     { title: "Dashboard", url: "/tutor/dashboard" },
   ],
-  auth = {
-    login: { title: "Login", url: "/login" },
-    register: { title: "Register", url: "/register" },
-  },
   className,
-}: NavbarProps) => {
+}: any) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const pathname = usePathname();
+  const { data: session } = authClient.useSession();
 
-  const { data: session, isPending, error } = authClient.useSession();
-
-  // Monitor scroll position
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const handleLogOut = async () => {
-    await authClient.signOut();
-  };
   return (
-    // 1. Sticky Wrapper: Keeps navbar at top during scroll
     <header
       className={cn(
-        "sticky top-0 z-50 w-full transition-all duration-300 ease-in-out",
-        isScrolled ? "pt-4" : "pt-0", // Add spacing when scrolled
+        "fixed top-0 z-50 w-full transition-all duration-500",
+        isScrolled ? "pt-4" : "pt-0",
         className,
       )}
     >
       <nav
         className={cn(
-          "mx-auto transition-all duration-300 ease-in-out border-b flex items-center justify-between",
-          // Dynamic classes based on scroll state
+          "mx-auto transition-all duration-500 ease-in-out flex items-center justify-between",
           isScrolled
-            ? "max-w-5xl rounded-2xl border bg-background/80 backdrop-blur-md shadow-lg px-6 py-3"
-            : "max-w-full border-transparent bg-background px-8 py-5",
+            ? "max-w-5xl rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl shadow-2xl px-6 py-2"
+            : "w-full max-w-7xl border-b border-white/5 bg-transparent px-8 py-5",
         )}
       >
-        {/* Left: Logo */}
-        <Link href={logo.url} className="flex items-center gap-2 shrink-0">
-          <div
-            className={cn(
-              "bg-primary rounded-lg p-1 transition-all",
-              isScrolled ? "size-7" : "size-8",
-            )}
-          >
-            <img src={logo.src} className="invert" alt={logo.alt} />
+        {/* Logo */}
+        <Link href="/" className="flex items-center gap-1 shrink-0 group">
+          <div className="relative rounded-lg flex items-center justify-center overflow-hidden transition-transform group-hover:scale-110 ">
+            <Image
+              src="https://res.cloudinary.com/dioe6nj4y/image/upload/v1770392888/leader_jhzssx.png"
+              height={30}
+              width={30}
+              className=" invert "
+              alt="Learn Hub"
+            />
           </div>
-          <span
-            className={cn(
-              "font-bold tracking-tight text-foreground transition-all",
-              isScrolled ? "text-lg" : "text-xl",
-            )}
-          >
-            {logo.title}
+          <span className="font-black text-xl tracking-tighter text-white">
+            Learn<span className="text-amber-500">Hub</span>
           </span>
         </Link>
 
-        {/* Center: Links (Hidden on mobile) */}
-        <div className="hidden md:flex flex-1 justify-center">
-          <NavigationMenu>
-            <NavigationMenuList className="gap-2">
-              {menu.map((item) => (
-                <NavigationMenuItem key={item.title}>
-                  <NavigationMenuLink asChild>
-                    <Link
-                      href={item.url}
-                      className="px-4 py-2 text-sm font-medium hover:text-primary transition-colors"
-                    >
-                      {item.title}
-                    </Link>
-                  </NavigationMenuLink>
-                </NavigationMenuItem>
-              ))}
-            </NavigationMenuList>
-          </NavigationMenu>
+        {/* Desktop Menu */}
+        <div className="hidden md:flex items-center gap-1">
+          {menu.map((item: any) => {
+            const isActive = pathname === item.url;
+            return (
+              <Link
+                key={item.title}
+                href={item.url}
+                className={cn(
+                  "px-4 py-2 text-sm font-bold transition-all rounded-full",
+                  isActive
+                    ? "text-amber-500 bg-amber-500/10"
+                    : "text-slate-400 hover:text-white hover:bg-white/5",
+                )}
+              >
+                {item.title}
+              </Link>
+            );
+          })}
         </div>
 
-        {/* Right: Auth Buttons */}
-        <div className="flex items-center gap-3 shrink-0">
+        {/* Right Side Actions */}
+        <div className="flex items-center gap-3">
           {session?.user ? (
-            <div className="flex gap-2">
-              <Avatar className="h-10 w-10 border-2 border-primary/10">
-                <AvatarImage
-                  src={session.user.image || ""}
-                  alt={session.user.name || "User"}
-                />
-                <AvatarFallback className="bg-secondary/20 text-secondary-foreground">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-9 w-9 border border-white/10">
+                <AvatarImage src={session.user.image || ""} />
+                <AvatarFallback className="bg-amber-500/20 text-amber-500 text-xs">
                   {session.user.name?.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
-
               <Button
-                onClick={() => handleLogOut()}
-                className="bg-red-400 rounded-2xl"
+                variant="ghost"
+                size="sm"
+                onClick={() => authClient.signOut()}
+                className="text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-full h-9"
               >
-                Log Out{" "}
+                <LogOut className="size-4 mr-2" />
+                <span className="hidden lg:inline">Log Out</span>
               </Button>
             </div>
           ) : (
-            <>
-              <Button
-                asChild
-                variant="ghost"
-                size="sm"
-                className="hidden sm:inline-flex"
-              >
-                <Link href={auth.login.url}>{auth.login.title}</Link>
-              </Button>
-              <Button
-                asChild
-                size={isScrolled ? "sm" : "default"}
-                className="bg-primary hover:bg-primary/90 rounded-xl hidden sm:inline-flex"
-              >
-                <Link href={auth.register.url}>{auth.register.title}</Link>
-              </Button>
-            </>
+            <Button
+              asChild
+              className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-full px-6"
+            >
+              <Link href="/login">Get Started</Link>
+            </Button>
           )}
 
-          {/* Mobile Menu Trigger */}
+          {/* Mobile Menu */}
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Menu className="size-4" />
+                <Button variant="ghost" size="icon" className="text-white">
+                  <Menu className="size-6" />
                 </Button>
               </SheetTrigger>
-
-              <SheetContent className="overflow-y-auto">
-                <SheetHeader>
-                  <SheetTitle>
-                    <Link href={logo.url} className="flex items-center gap-2">
-                      <img
-                        src={logo.src}
-                        className="max-h-8 dark:invert"
-                        alt={logo.alt}
-                      />
+              <SheetContent
+                side="right"
+                className="bg-black border-white/10 text-white"
+              >
+                <div className="flex flex-col gap-6 mt-10">
+                  {menu.map((item: any) => (
+                    <Link
+                      key={item.title}
+                      href={item.url}
+                      className="text-2xl font-bold hover:text-amber-500"
+                    >
+                      {item.title}
                     </Link>
-                  </SheetTitle>
-                </SheetHeader>
-
-                <div className="flex flex-col gap-6 p-4">
-                  <Accordion
-                    type="single"
-                    collapsible
-                    className="flex w-full flex-col gap-4"
-                  >
-                    {menu.map((item) => renderMobileMenuItem(item))}
-                  </Accordion>
-
-                  <div className="flex flex-col gap-3">
-                    <Button asChild variant="outline">
-                      <Link href={auth.login.url}>{auth.login.title}</Link>
-                    </Button>
-
-                    <Button asChild>
-                      <Link href={auth.register.url}>
-                        {auth.register.title}
-                      </Link>
-                    </Button>
-                  </div>
+                  ))}
                 </div>
               </SheetContent>
             </Sheet>
@@ -238,11 +148,4 @@ const Navbar = ({
   );
 };
 
-const renderMobileMenuItem = (item: MenuItem) => {
-  return (
-    <Link key={item.title} href={item.url} className="text-md font-semibold">
-      {item.title}
-    </Link>
-  );
-};
 export { Navbar };

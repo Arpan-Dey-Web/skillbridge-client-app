@@ -40,54 +40,19 @@ html {
 }
 
 :root {
-  /* 60% - Backgrounds (Pure White) */
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.31 0.04 240); /* #2D3748 Charcoal */
-
-  /* 30% - Primary Actions (Mint Green #10B981) */
-  --primary: oklch(0.72 0.19 156);
-  --primary-foreground: oklch(0.98 0 0); /* White text on green */
-
-  /* 10% - Secondary Highlights (Lavender #D8B4FE) */
-  --secondary: oklch(0.82 0.12 300);
-  --secondary-foreground: oklch(0.31 0.04 240);
-  /* Soft Accent (Pale Mint #ECFDF5) for cards/sections */
-  --accent: oklch(0.97 0.02 156);
-  --accent-foreground: oklch(0.31 0.04 240);
-  /* Surface & Borders */
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.31 0.04 240);
-  --border: oklch(0.92 0 0);
-  --input: oklch(0.92 0 0);
-  --ring: oklch(0.72 0.19 156);
-  --radius: 0.75rem;
-  --sidebar: hsl(0 0% 98%);
-  --sidebar-foreground: hsl(240 5.3% 26.1%);
-  --sidebar-primary: hsl(240 5.9% 10%);
-  --sidebar-primary-foreground: hsl(0 0% 98%);
-  --sidebar-accent: hsl(240 4.8% 95.9%);
-  --sidebar-accent-foreground: hsl(240 5.9% 10%);
-  --sidebar-border: hsl(220 13% 91%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+  --background: oklch(0.14 0.02 260); /* Midnight Navy */
+  --foreground: oklch(0.98 0.01 260);
+  --card: oklch(0.19 0.03 260);
+  --primary: oklch(0.78 0.18 75); /* Amber Gold */
+  --secondary: oklch(0.35 0.05 260); /* Muted Indigo */
+  --accent: oklch(0.85 0.12 85);
+  --border: oklch(0.25 0.03 260);
 }
 
-/* Dark Mode Overrides */
 .dark {
-  --background: oklch(0.2 0.04 240);
-  --foreground: oklch(0.98 0 0);
-  --card: oklch(0.25 0.04 240);
-  --primary: oklch(0.75 0.15 156); /* Slightly brighter for dark mode */
-  --secondary: oklch(0.75 0.1 300);
-  --accent: oklch(0.3 0.05 156);
-  --border: oklch(0.35 0.04 240);
-  --sidebar: hsl(240 5.9% 10%);
-  --sidebar-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-primary: hsl(224.3 76.3% 48%);
-  --sidebar-primary-foreground: hsl(0 0% 100%);
-  --sidebar-accent: hsl(240 3.7% 15.9%);
-  --sidebar-accent-foreground: hsl(240 4.8% 95.9%);
-  --sidebar-border: hsl(240 3.7% 15.9%);
-  --sidebar-ring: hsl(217.2 91.2% 59.8%);
+  --background: oklch(0.1 0.02 260);
+  --card: oklch(0.15 0.02 260);
+  --primary: oklch(0.82 0.15 75);
 }
 
 @keyframes float {
@@ -109,5 +74,32 @@ html {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  @keyframes shimmer {
+    0% { background-position: -200% center; }
+    100% { background-position: 200% center; }
+  }
+
+  .shimmer-gold {
+    /* This creates the gradient from Gold to White to Gold */
+    background: linear-gradient(
+      90deg,
+      #f59e0b 0%,
+      #fbbf24 35%,
+      #fff 50%,
+      #fbbf24 65%,
+      #f59e0b 100%
+    );
+    background-size: 200% auto;
+    /* This "cuts" the background into the shape of the letters */
+    -webkit-background-clip: text;
+    background-clip: text;
+    /* This hides the actual text color so the gradient shows through */
+    color: transparent !important;
+    display: inline-block;
+    animation: shimmer 5s linear infinite;
   }
 }

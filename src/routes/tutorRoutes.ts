@@ -1,6 +1,6 @@
 export const tutorRoutes = [
     {
-        title: "Tutor Dashboard",
+        title: "Tutor Dashboaard",
         items: [
             {
                 title: "Home",

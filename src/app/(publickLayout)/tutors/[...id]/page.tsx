@@ -12,9 +12,33 @@ import {
   ShieldCheck,
   ArrowLeft,
   Clock,
+  CheckCircle2,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
+
+/**
+ * Converts a slot (dayOfWeek, startTime) into real Date objects for the upcoming week
+ */
+function generateBookingDates(slot: any) {
+  const now = new Date();
+  const result = new Date(now);
+
+  // Find the next occurrence of that day of the week
+  result.setDate(now.getDate() + ((slot.dayOfWeek + 7 - now.getDay()) % 7));
+
+  const [startHours, startMins] = slot.startTime.split(":");
+  const [endHours, endMins] = slot.endTime.split(":");
+
+  const startISO = new Date(
+    result.setHours(parseInt(startHours), parseInt(startMins), 0, 0),
+  ).toISOString();
+  const endISO = new Date(
+    result.setHours(parseInt(endHours), parseInt(endMins), 0, 0),
+  ).toISOString();
+
+  return { startISO, endISO };
+}
 
 export default function TutorProfilePage() {
   const params = useParams();
@@ -22,6 +46,8 @@ export default function TutorProfilePage() {
 
   const [tutor, setTutor] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  // Track which slot the user clicked
+  const [selectedSlot, setSelectedSlot] = useState<any>(null);
 
   useEffect(() => {
     if (tutorId) {
@@ -34,6 +60,51 @@ export default function TutorProfilePage() {
         .catch(() => setLoading(false));
     }
   }, [tutorId]);
+
+  const bookSession = async () => {
+    if (!selectedSlot) {
+      toast.error("Please select an availability slot first");
+      return;
+    }
+
+    const toastId = toast.loading("Confirming your session...");
+
+    try {
+      // Helper: Generate actual ISO strings for the backend
+      const { startISO, endISO } = generateBookingDates(selectedSlot);
+
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            startTime: startISO,
+            endTime: endISO,
+            tutorProfileId: tutor.id, // Now sending the actual ID
+          }),
+        },
+      );
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.message || "Booking failed");
+      }
+
+      toast.success("Session booked successfully!", { id: toastId });
+      setSelectedSlot(null); // Reset selection
+      return result.data;
+    } catch (error: any) {
+      toast.error(error.message || "An unexpected error occurred", {
+        id: toastId,
+      });
+      console.error("Booking Error:", error);
+    }
+  };
 
   if (loading)
     return (
@@ -53,7 +124,6 @@ export default function TutorProfilePage() {
 
   return (
     <div className="min-h-screen bg-[#020617] text-white py-20">
-      {/* Top Navigation */}
       <div className="max-w-7xl mx-auto px-6 pt-8">
         <Button
           variant="ghost"
@@ -71,15 +141,14 @@ export default function TutorProfilePage() {
 
       <div className="max-w-7xl mx-auto px-6 py-10">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* --- Left Column: Bio & Reviews --- */}
+          {/* --- Left Column --- */}
           <div className="lg:col-span-2 space-y-12">
-            {/* Header Section */}
             <section className="relative">
               <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
                 <Avatar className="size-32 border-4 border-white/5 shadow-2xl">
                   <AvatarImage src={tutor.user?.image} />
                   <AvatarFallback className="bg-amber-500 text-black text-4xl font-black">
-                    {tutor.user?.name[0]}
+                    {tutor.user?.name?.[0]}
                   </AvatarFallback>
                 </Avatar>
 
@@ -127,13 +196,12 @@ export default function TutorProfilePage() {
                 <MessageSquare className="w-6 h-6 text-amber-500" />
                 Student Feedback
               </h3>
-
               <div className="grid grid-cols-1 gap-4">
                 {tutor.bookings?.filter((b: any) => b.review).length > 0 ? (
                   tutor.bookings.map((booking: any) => (
                     <Card
                       key={booking.id}
-                      className="bg-white/5 border-white/10 rounded-3xl overflow-hidden group hover:border-amber-500/30 transition-colors"
+                      className="bg-white/5 border-white/10 rounded-3xl group hover:border-amber-500/30 transition-colors"
                     >
                       <CardContent className="p-8">
                         <div className="flex items-center gap-1 text-amber-500 mb-4">
@@ -145,11 +213,11 @@ export default function TutorProfilePage() {
                           ))}
                         </div>
                         <p className="text-white text-lg font-medium leading-relaxed italic">
-                          "{booking.review.comment}"
+                          {booking.review.comment}
                         </p>
                         <div className="mt-6 flex items-center gap-3">
                           <div className="size-8 rounded-full bg-slate-800 border border-white/10 flex items-center justify-center text-xs font-bold uppercase">
-                            {booking.review.student?.name[0]}
+                            {booking.review.student?.name?.[0]}
                           </div>
                           <p className="text-sm font-bold text-slate-500 tracking-widest uppercase">
                             {booking.review.student?.name}
@@ -185,34 +253,49 @@ export default function TutorProfilePage() {
               <CardContent className="p-8 space-y-8">
                 <div>
                   <h4 className="font-bold mb-6 text-white uppercase tracking-widest text-xs flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-amber-500" /> Availability
+                    <Clock className="w-4 h-4 text-amber-500" /> 1. Select
+                    Availability
                   </h4>
                   <div className="space-y-3">
                     {tutor.availability?.map((slot: any) => (
-                      <div
+                      <button
                         key={slot.id}
-                        className="flex justify-between items-center text-sm p-4 bg-white/5 rounded-2xl border border-white/5 group hover:border-amber-500/30 transition-colors"
+                        onClick={() => setSelectedSlot(slot)}
+                        className={`w-full flex justify-between items-center text-sm p-4 rounded-2xl border transition-all ${
+                          selectedSlot?.id === slot.id
+                            ? "border-amber-500 bg-amber-500/10"
+                            : "bg-white/5 border-white/5 hover:border-amber-500/30"
+                        }`}
                       >
-                        <span className="font-bold text-slate-200">
-                          {getDayName(slot.dayOfWeek)}
-                        </span>
+                        <div className="flex items-center gap-3">
+                          {selectedSlot?.id === slot.id && (
+                            <CheckCircle2 className="size-4 text-amber-500" />
+                          )}
+                          <span className="font-bold text-slate-200">
+                            {getDayName(slot.dayOfWeek)}
+                          </span>
+                        </div>
                         <span className="text-amber-500 font-mono">
                           {slot.startTime} - {slot.endTime}
                         </span>
-                      </div>
+                      </button>
                     ))}
                   </div>
                 </div>
 
                 <Button
-                  className="w-full h-16 bg-white text-black hover:bg-amber-500 transition-all rounded-[1.25rem] text-lg font-black uppercase tracking-widest"
-                  onClick={() => toast.success("Opening checkout...")}
+                  className={`w-full h-16 transition-all rounded-[1.25rem] text-lg font-black uppercase tracking-widest ${
+                    selectedSlot
+                      ? "bg-white text-black hover:bg-amber-500"
+                      : "bg-white/10 text-slate-500 cursor-not-allowed"
+                  }`}
+                  onClick={bookSession}
+                  disabled={!selectedSlot}
                 >
-                  Secure Session
+                  {selectedSlot ? "Secure Session" : "Choose a Slot"}
                 </Button>
-
                 <p className="text-center text-[10px] text-slate-500 font-bold uppercase tracking-tighter">
-                  100% Satisfaction Guarantee or Full Refund
+                  100% Satisfaction Guarantee
                 </p>
               </CardContent>
             </Card>
@@ -223,8 +306,10 @@ export default function TutorProfilePage() {
   );
 }
 
+// --- Helpers ---
+
 function getDayName(day: number) {
-  const days = [
+  return [
     "Sunday",
     "Monday",
     "Tuesday",
@@ -232,6 +317,5 @@ function getDayName(day: number) {
     "Thursday",
     "Friday",
     "Saturday",
-  ];
-  return days[day];
+  ][day];
 }

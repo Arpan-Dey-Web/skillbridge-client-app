@@ -8,7 +8,7 @@ export const adminRoutes = [
             },
             {
                 title: "Dashboard",
-                url: "/dashboard/admin",
+                url: "/admin/dashboard",
             },
             {
                 title: "Users",

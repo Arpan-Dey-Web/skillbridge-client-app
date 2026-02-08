@@ -88,7 +88,7 @@ export default function AboutPage() {
                 never building anything real.
               </p>
               <p>
-                SkillBridge was born to fix that. We connected the dots between
+                LearnHub was born to fix that. We connected the dots between
                 students who are hungry to grow and experts who are passionate
                 about sharing their edge. Today, we power thousands of learning
                 hours every single month.

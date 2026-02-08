@@ -1,4 +1,4 @@
-# SkillBridge 🎓
+# LearnHub 🎓
 
 **"Connect with Expert Tutors, Learn Anything"**
 
@@ -6,7 +6,7 @@
 
 ## Project Overview
 
-SkillBridge is a full-stack web application that connects learners with expert tutors. Students can browse tutor profiles, view availability, and book sessions instantly. Tutors can manage their profiles, set availability, and track their teaching sessions. Admins oversee the platform and manage users.
+LearnHub is a full-stack web application that connects learners with expert tutors. Students can browse tutor profiles, view availability, and book sessions instantly. Tutors can manage their profiles, set availability, and track their teaching sessions. Admins oversee the platform and manage users.
 
 ---
 
@@ -166,10 +166,6 @@ Design your own schema for the following tables:
 | GET    | `/api/auth/me`       | Get current user  |
 
 
-
-app.all('/api/auth/*splat', toNodeHandler(auth));
-
-
 ### Tutors (Public)
 
 | Method | Endpoint          | Description                 |
@@ -302,3 +298,5 @@ background: #FFFFFF
 primary: #10B981
 secondary: #D8B4FE
 accent: #ECFDF5
+
+

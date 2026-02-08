@@ -31,8 +31,8 @@ const Banner = () => {
           </h1>
 
           <p className="text-lg text-slate-400 leading-relaxed mb-10 max-w-lg">
-            SkillBridge connects you with elite tutors for high-impact
-            mentorship. No noise, just measurable progress.
+            LearnHub connects you with elite tutors for high-impact mentorship.
+            No noise, just measurable progress.
           </p>
 
           <div className="flex flex-wrap gap-4">
@@ -41,12 +41,12 @@ const Banner = () => {
                 size="lg"
                 className="bg-amber-500 hover:bg-amber-600 text-black font-bold h-14 px-8 rounded-2xl group"
               >
-                Join SkillBridge
+                Join LearnHub
                 <ArrowRight className="ml-2 size-5 group-hover:translate-x-1 transition-transform" />
               </Button>
             </Link>
 
-            <Link href={'/tutors'}>
+            <Link href={"/tutors"}>
               <Button
                 size="lg"
                 variant="outline"

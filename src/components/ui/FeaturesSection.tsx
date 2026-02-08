@@ -47,8 +47,8 @@ export function FeaturesSection() {
             <span className="text-primary italic">to succeed.</span>
           </h2>
           <p className="text-foreground/50 text-lg font-medium">
-            SkillBridge provides the tools for both students and tutors to have
-            a seamless, high-impact learning experience.
+            LearnHub provides the tools for both students and tutors to have a
+            seamless, high-impact learning experience.
           </p>
         </div>
 

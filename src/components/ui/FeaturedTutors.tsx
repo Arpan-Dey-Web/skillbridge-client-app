@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { Button } from "./button";
 import { Star, Clock, ShieldCheck, ArrowRight, User } from "lucide-react";
 import { SpotlightCard } from "./spotlight-card";
-import { motion } from "framer-motion"; 
+import { motion } from "framer-motion";
 import Image from "next/image";
 import Link from "next/link";
 interface Tutor {
@@ -23,6 +23,7 @@ interface Tutor {
 export function FeaturedTutors() {
   const [tutors, setTutors] = useState<Tutor[]>([]);
   const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/tutors`)
@@ -139,10 +140,13 @@ export function FeaturedTutors() {
                   </div>
 
                   {/* Action Button */}
-                  <button className="w-full bg-primary hover:bg-primary/80 text-background font-black py-4 rounded-2xl transition-all shadow-lg shadow-primary/10 flex items-center justify-center gap-2 group-hover:gap-4">
-                    Book Session
+                  <Button className="w-full bg-primary hover:bg-primary/80 text-background font-black py-4 rounded-2xl transition-all shadow-lg shadow-primary/10 flex items-center justify-center gap-2 group-hover:gap-4">
+                    <Link href={`/tutors/${tutor.id}`}>
+                      Book Session
+                    </Link>
+
                     <Clock className="size-4" />
-                  </button>
+                  </Button>
                 </div>
               </SpotlightCard>
             </motion.div>

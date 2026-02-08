@@ -6,10 +6,17 @@ import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "../ui/sheet";
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "../ui/sheet";
 import { authClient } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Image from "next/image";
+import { Roles } from "@/constants/roles";
 
 interface NavbarProps {
   className?: string;
@@ -18,20 +25,23 @@ interface NavbarProps {
 const Navbar = ({ className }: NavbarProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
-
   const { data: session } = authClient.useSession();
 
-  // The menu is now clean and static.
-  // It points to /dashboard, which is your proxy route.
-  const menu = useMemo(
-    () => [
+  const menu = useMemo(() => {
+    const items = [
       { title: "Home", url: "/" },
       { title: "Tutors", url: "/tutors" },
       { title: "About", url: "/about" },
-      { title: "Dashboard", url: "/dashboard" },
-    ],
-    [],
-  );
+    ];
+
+    // Dynamic Dashboard Link based on role
+    let dashboardPath = "/dashboard";
+    if (session?.user?.role === Roles.admin) dashboardPath = "/dashboard/admin";
+    if (session?.user?.role === Roles.tutor) dashboardPath = "/dashboard/tutor";
+
+    items.push({ title: "Dashboard", url: dashboardPath });
+    return items;
+  }, [session]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -57,32 +67,24 @@ const Navbar = ({ className }: NavbarProps) => {
       >
         {/* Logo */}
         <Link href="/" className="flex items-center gap-1 shrink-0 group">
-          <div className="relative rounded-lg flex items-center justify-center overflow-hidden transition-transform group-hover:scale-110 ">
-            <Image
-              src="https://res.cloudinary.com/dioe6nj4y/image/upload/v1770392888/leader_jhzssx.png"
-              height={30}
-              width={30}
-              className="invert"
-              alt="Learn Hub"
-            />
-          </div>
+          <Image
+            src="https://res.cloudinary.com/dioe6nj4y/image/upload/v1770392888/leader_jhzssx.png"
+            height={30}
+            width={30}
+            className="invert"
+            alt="Learn Hub"
+          />
           <span className="font-black text-xl tracking-tighter text-white">
-            Learn<span className="shimmer-gold">Hub</span>
+            Learn<span className="text-amber-500">Hub</span>
           </span>
         </Link>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-1">
           {menu.map((item) => {
-            // FIX: Handle active state for nested dashboard routes
-            // Dashboard is active if we are on /dashboard OR any role-based subroute
             const isActive =
               pathname === item.url ||
-              (item.url === "/dashboard" &&
-                (pathname.startsWith("/admin") ||
-                  pathname.startsWith("/student") ||
-                  pathname.startsWith("/tutor")));
-
+              (item.title === "Dashboard" && pathname.startsWith("/dashboard"));
             return (
               <Link
                 key={item.title}
@@ -100,13 +102,13 @@ const Navbar = ({ className }: NavbarProps) => {
           })}
         </div>
 
-        {/* Right Side Actions */}
+        {/* Auth Actions */}
         <div className="flex items-center gap-3">
           {session?.user ? (
             <div className="flex items-center gap-3">
-              <Avatar className="h-9 w-9 border border-white/10 ring-2 ring-transparent hover:ring-amber-500/50 transition-all">
+              <Avatar className="h-9 w-9 border border-white/10">
                 <AvatarImage src={session.user.image || ""} />
-                <AvatarFallback className="bg-amber-500/20 text-amber-500 text-xs font-bold">
+                <AvatarFallback className="bg-amber-500/20 text-amber-500">
                   {session.user.name?.slice(0, 2).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
@@ -114,7 +116,7 @@ const Navbar = ({ className }: NavbarProps) => {
                 variant="ghost"
                 size="sm"
                 onClick={() => authClient.signOut()}
-                className="text-slate-400 hover:text-red-400 hover:bg-red-400/10 rounded-full h-9 transition-colors"
+                className="text-slate-400 hover:text-red-400"
               >
                 <LogOut className="size-4 mr-2" />
                 <span className="hidden lg:inline">Log Out</span>
@@ -123,7 +125,7 @@ const Navbar = ({ className }: NavbarProps) => {
           ) : (
             <Button
               asChild
-              className="bg-amber-500 hover:bg-amber-600 text-black font-black rounded-full px-6 shadow-[0_0_20px_rgba(245,158,11,0.2)] hover:shadow-[0_0_30px_rgba(245,158,11,0.4)] transition-all active:scale-95"
+              className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-full px-6"
             >
               <Link href="/login">Get Started</Link>
             </Button>
@@ -133,11 +135,7 @@ const Navbar = ({ className }: NavbarProps) => {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="text-white hover:bg-white/5 rounded-full"
-                >
+                <Button variant="ghost" size="icon" className="text-white">
                   <Menu className="size-6" />
                 </Button>
               </SheetTrigger>
@@ -145,30 +143,26 @@ const Navbar = ({ className }: NavbarProps) => {
                 side="right"
                 className="bg-[#020617] border-white/10 text-white p-8"
               >
-                <div className="flex flex-col gap-8 mt-12">
-                  {menu.map((item) => {
-                    const isActive =
-                      pathname === item.url ||
-                      (item.url === "/dashboard" &&
-                        (pathname.startsWith("/admin") ||
-                          pathname.startsWith("/student") ||
-                          pathname.startsWith("/tutor")));
-
-                    return (
-                      <Link
-                        key={item.title}
-                        href={item.url}
-                        className={cn(
-                          "text-3xl font-black tracking-tighter transition-all",
-                          isActive
-                            ? "text-amber-500"
-                            : "text-white/40 hover:text-white",
-                        )}
-                      >
-                        {item.title}
-                      </Link>
-                    );
-                  })}
+                <SheetHeader>
+                  <SheetTitle className="text-left text-amber-500">
+                    Navigation
+                  </SheetTitle>
+                </SheetHeader>
+                <div className="flex flex-col gap-6 mt-10">
+                  {menu.map((item) => (
+                    <Link
+                      key={item.title}
+                      href={item.url}
+                      className={cn(
+                        "text-3xl font-black tracking-tighter",
+                        pathname.startsWith(item.url)
+                          ? "text-amber-500"
+                          : "text-white/40",
+                      )}
+                    >
+                      {item.title}
+                    </Link>
+                  ))}
                 </div>
               </SheetContent>
             </Sheet>

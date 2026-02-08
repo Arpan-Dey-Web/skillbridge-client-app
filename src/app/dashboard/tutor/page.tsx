@@ -14,16 +14,28 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { motion } from "framer-motion";
+import { redirect } from "next/navigation";
 
 export default function TutorDashboard() {
   const { data: session } = authClient.useSession();
+const [sessions, setSession] = useState([])
+
+  if (session?.user?.role === "STUDENT") {
+    redirect("/dashboard");
+  }
+  if (session?.user?.role === "ADMIN") {
+    redirect("/dashboard/admin");
+  }
+
   const [stats] = useState({
     totalRevenue: "1,240.00",
     totalSessions: 42,
     avgRating: 4.9,
     activeStudents: 12,
   });
-
+useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_APP_URL}`).then();
+  }, []);
   return (
     <div className="space-y-10">
       {/* --- Section 1: Welcome Header --- */}

@@ -55,9 +55,8 @@ export function AppSidebar({
   ...props
 }: {
   user: { role: string };
-} & React.ComponentProps<typeof Sidebar>) {
+  } & React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
-
 
   let routes: Route[] = [];
   switch (user.role) {
@@ -73,6 +72,7 @@ export function AppSidebar({
     default:
       routes = [];
   }
+
 
   return (
     <Sidebar className="border-r border-white/5 bg-[#020617]" {...props}>

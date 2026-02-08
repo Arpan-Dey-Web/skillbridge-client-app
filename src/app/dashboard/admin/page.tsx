@@ -14,8 +14,19 @@ import {
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { authClient } from "@/lib/auth-client";
+import { redirect } from "next/navigation";
 
 export default function AdminDashboard() {
+    const { data: session } = authClient.useSession();
+
+  if (session?.user?.role === "STUDENT") {
+    redirect("/dashboard");
+  }
+  if (session?.user?.role === "TUTOR") {
+    redirect("/dashboard/tutor");
+  }
+
   const platformStats = [
     {
       label: "Total Users",

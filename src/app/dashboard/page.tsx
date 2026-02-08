@@ -5,8 +5,17 @@ import { BookOpen, Clock, Star, GraduationCap } from "lucide-react";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { authClient } from "@/lib/auth-client";
+import { redirect } from "next/navigation";
 
 export default function StudentDashboard() {
+  const { data: session } = authClient.useSession();
+    if (session?.user?.role === "TUTOR") {
+      redirect("/dashboard/tutor");
+    }
+    if (session?.user?.role === "ADMIN") {
+      redirect("/dashboard/admin");
+    }
   // Stats specifically for the student overview
   const stats = [
     {

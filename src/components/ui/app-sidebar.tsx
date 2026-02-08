@@ -31,9 +31,8 @@ import {
   SidebarRail,
 } from "./sidebar";
 import { Roles } from "@/constants/roles";
-import { adminRoutes } from "@/routes/adminRoutes";
-import { tutorRoutes } from "@/routes/tutorRoutes";
-import { studentRoutes } from "@/routes/studentRoutes";
+
+import { adminRoutes, studentRoutes, tutorRoutes } from "@/routes/Routes";
 import { Route } from "@/types/routes.types";
 
 // 1. Icon Map to automatically assign icons based on title
@@ -59,7 +58,7 @@ export function AppSidebar({
 } & React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
 
-  // 2. Logic to select the correct route array
+
   let routes: Route[] = [];
   switch (user.role) {
     case Roles.admin:

@@ -8,40 +8,17 @@ export const studentRoutes = [
             },
             {
                 title: "Student Dashboard",
-                url: "/student/dashboard",
+                url: "/dashboard",
             },
             {
                 title: "My Bookings",
-                url: "/student/bookings",
+                url: "/dashboard/bookings",
             },
             {
                 title: "Profile",
-                url: "/student/profile",
+                url: "/dashboard/profile",
             },
 
         ],
     },
 ];
-
-//     {
-//         title: "Main",
-//         items: [
-//             {
-//                 title: "Home",
-//                 url: "/", // Goes back to public landing
-//             },
-//             {
-//                 title: "Overview",
-//                 url: "/dashboard", // Central dashboard for the student
-//             },
-//             {
-//                 title: "My Bookings",
-//                 url: "/dashboard/bookings",
-//             },
-//             {
-//                 title: "Profile",
-//                 url: "/dashboard/profile",
-//             },
-//         ],
-//     },
-// ];

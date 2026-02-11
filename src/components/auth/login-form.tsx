@@ -38,7 +38,7 @@ export function LoginForm({
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
-      console.log(value);
+    
       const toastId = toast.loading("Logging in User");
       try {
         const { data, error } = await authClient.signIn.email(value);

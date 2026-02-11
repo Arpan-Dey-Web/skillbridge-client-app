@@ -18,6 +18,7 @@ export const tutorRoutes = [
             { title: "Dashboard", url: "/dashboard/tutor" },
             { title: "Availability", url: "/dashboard/tutor/availability" },
             { title: "Profile", url: "/dashboard/tutor/profile" },
+            { title: "Set-Profile", url: "/dashboard/tutor/set-profile" },
             { title: "Booking Request", url: "/dashboard/tutor/request" },
         ],
     },

@@ -15,6 +15,7 @@ import {
   GraduationCap,
   Wallet,
   Sparkles,
+  LogOut,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
@@ -34,6 +35,8 @@ import { Roles } from "@/constants/roles";
 
 import { adminRoutes, studentRoutes, tutorRoutes } from "@/routes/Routes";
 import { Route } from "@/types/routes.types";
+import { Button } from "./button";
+import { authClient } from "@/lib/auth-client";
 
 // 1. Icon Map to automatically assign icons based on title
 const iconMap: Record<string, any> = {
@@ -55,7 +58,7 @@ export function AppSidebar({
   ...props
 }: {
   user: { role: string };
-  } & React.ComponentProps<typeof Sidebar>) {
+} & React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
 
   let routes: Route[] = [];
@@ -72,7 +75,6 @@ export function AppSidebar({
     default:
       routes = [];
   }
-
 
   return (
     <Sidebar className="border-r border-white/5 bg-[#020617]" {...props}>
@@ -131,6 +133,15 @@ export function AppSidebar({
                 })}
               </SidebarMenu>
             </SidebarGroupContent>
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => authClient.signOut()}
+              className="text-slate-400 hover:text-red-400"
+            >
+              <LogOut className="size-4 mr-2" />
+              <span className="hidden lg:inline">Log Out</span>
+            </Button>
           </SidebarGroup>
         ))}
       </SidebarContent>

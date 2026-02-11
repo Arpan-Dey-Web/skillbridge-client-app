@@ -23,7 +23,7 @@ export default function TutorDashboard() {
   const { data: session } = authClient.useSession();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tutor,setTutors] = useState([])
+  const [tutor, setTutors] = useState([]);
   // Redirect based on role
   if (session?.user?.role === "STUDENT") redirect("/dashboard");
   if (session?.user?.role === "ADMIN") redirect("/dashboard/admin");
@@ -47,7 +47,6 @@ export default function TutorDashboard() {
       .finally(() => setLoading(false));
   }, []);
 
-
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/tutors/${session?.userId}`)
       .then((res) => res.json())
@@ -55,8 +54,6 @@ export default function TutorDashboard() {
       .catch((err) => toast.error(err.message))
       .finally(() => setLoading(false));
   }, []);
-console.log("tutors",tutor);
-
 
   // Helper to format the Date
   const formatDate = (dateStr: string) => {
@@ -219,7 +216,7 @@ console.log("tutors",tutor);
                 Your profile is live for students.
               </h3>
               <Link
-                href="/dashboard/tutor/profile"
+                href="/dashboard/tutor/availability"
                 className="block w-full text-center py-4 bg-black text-white rounded-2xl font-black text-sm hover:scale-[1.02] transition-transform"
               >
                 Edit Availability

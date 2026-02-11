@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import {
   Plus,
@@ -17,16 +17,17 @@ import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const MOCK_CATEGORIES = [
-  { id: 1, name: "Mathematics", tutors: 124, sessions: 840, growth: "+12%" },
-  { id: 2, name: "Programming", tutors: 210, sessions: 1205, growth: "+24%" },
-  { id: 3, name: "Philosophy", tutors: 45, sessions: 180, growth: "+2%" },
-  { id: 4, name: "Design", tutors: 88, sessions: 450, growth: "+18%" },
-  { id: 5, name: "Physics", tutors: 62, sessions: 310, growth: "+5%" },
-  { id: 6, name: "Business", tutors: 115, sessions: 720, growth: "+15%" },
-];
 
 export default function AllCategories() {
+  const [categories, setCategories] = useState([])
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories`, {
+      credentials: "include",
+    })
+      .then((res) => res.json())
+      .then((res) => setCategories(res.data));
+  }, []);
   return (
     <div className="space-y-8">
       {/* --- HEADER --- */}
@@ -63,9 +64,9 @@ export default function AllCategories() {
 
       {/* --- CATEGORY BENTO GRID --- */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {MOCK_CATEGORIES.map((cat, i) => (
+        {categories.map((cat, i) => (
           <motion.div
-            key={cat.id}
+            key={i}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.05 }}
@@ -91,12 +92,12 @@ export default function AllCategories() {
               <div className="space-y-4 relative z-10">
                 <div>
                   <h3 className="text-xl font-black text-white tracking-tight">
-                    {cat.name}
+                    {cat.name ?cat.name:""}
                   </h3>
                   <div className="flex items-center gap-2 mt-1">
                     <TrendingUp className="size-3 text-emerald-500" />
                     <span className="text-[10px] font-black text-emerald-500 uppercase tracking-widest">
-                      {cat.growth} Growth
+                      {cat.growth? cat.growth: ""} Growth
                     </span>
                   </div>
                 </div>

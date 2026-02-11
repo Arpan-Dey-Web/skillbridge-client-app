@@ -60,12 +60,11 @@ export function RegisterForm({
         toast.success("User Created Sucessfully", { id: toastId });
 
         if (value.role === "TUTOR") {
-          router.push("/tutor/profile");
+          router.push("/dashboard/tutor/profile");
         } else {
           router.push("/");
         }
       } catch (error) {
-        console.log(error);
         toast.error("Something Went Wrong, Please try again", { id: toastId });
       }
     },
@@ -108,7 +107,6 @@ export function RegisterForm({
                 </p>
               </div>
 
-              {/* ROLE SELECTION - Upgraded Styling */}
               <form.Field name="role">
                 {(field) => (
                   <Field className="grid grid-cols-2 gap-4">

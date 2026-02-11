@@ -69,6 +69,7 @@ export default function TutorProfilePage() {
 
     const toastId = toast.loading("Confirming your session...");
 
+
     try {
       // Helper: Generate actual ISO strings for the backend
       const { startISO, endISO } = generateBookingDates(selectedSlot);
@@ -84,7 +85,7 @@ export default function TutorProfilePage() {
           body: JSON.stringify({
             startTime: startISO,
             endTime: endISO,
-            tutorProfileId: tutor.id, // Now sending the actual ID
+            tutorProfileId: tutor.id, 
           }),
         },
       );

@@ -26,7 +26,6 @@ const Navbar = ({ className }: NavbarProps) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
   const { data: session } = authClient.useSession();
-
   const menu = useMemo(() => {
     const items = [
       { title: "Home", url: "/" },
@@ -34,7 +33,7 @@ const Navbar = ({ className }: NavbarProps) => {
       { title: "About", url: "/about" },
     ];
 
-    // Dynamic Dashboard Link based on role
+
     let dashboardPath = "/dashboard";
     if (session?.user?.role === Roles.admin) dashboardPath = "/dashboard/admin";
     if (session?.user?.role === Roles.tutor) dashboardPath = "/dashboard/tutor";

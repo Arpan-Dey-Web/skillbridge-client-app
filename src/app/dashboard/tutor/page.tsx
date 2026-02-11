@@ -9,33 +9,63 @@ import {
   CheckCircle,
   TrendingUp,
   ArrowUpRight,
+  Inbox,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { motion } from "framer-motion";
 import { redirect } from "next/navigation";
+import { toast } from "sonner";
+import { cn } from "@/lib/utils";
 
 export default function TutorDashboard() {
   const { data: session } = authClient.useSession();
-const [sessions, setSession] = useState([])
+  const [bookings, setBookings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [tutor,setTutors] = useState([])
+  // Redirect based on role
+  if (session?.user?.role === "STUDENT") redirect("/dashboard");
+  if (session?.user?.role === "ADMIN") redirect("/dashboard/admin");
+  console.log(session);
+  // Dynamic stats calculation from real data
+  const totalRevenue = bookings.reduce((acc, curr) => acc + curr.totalPrice, 0);
+  const activeStudents = new Set(bookings.map((b) => b.partnerEmail)).size;
 
-  if (session?.user?.role === "STUDENT") {
-    redirect("/dashboard");
-  }
-  if (session?.user?.role === "ADMIN") {
-    redirect("/dashboard/admin");
-  }
-
-  const [stats] = useState({
-    totalRevenue: "1,240.00",
-    totalSessions: 42,
-    avgRating: 4.9,
-    activeStudents: 12,
-  });
-useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL}`).then();
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/bookings`, {
+      credentials: "include",
+    })
+      .then((res) => {
+        if (res.status === 403) throw new Error("Session invalid");
+        return res.json();
+      })
+      .then((res) => {
+        if (res.success) setBookings(res.data);
+      })
+      .catch((err) => toast.error(err.message))
+      .finally(() => setLoading(false));
   }, []);
+
+
+  useEffect(() => {
+    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/tutors/${session?.userId}`)
+      .then((res) => res.json())
+      .then((data) => setTutors(data))
+      .catch((err) => toast.error(err.message))
+      .finally(() => setLoading(false));
+  }, []);
+console.log("tutors",tutor);
+
+
+  // Helper to format the Date
+  const formatDate = (dateStr: string) => {
+    return new Date(dateStr).toLocaleDateString("en-US", {
+      day: "numeric",
+      month: "short",
+    });
+  };
+
   return (
     <div className="space-y-10">
       {/* --- Section 1: Welcome Header --- */}
@@ -44,7 +74,7 @@ useEffect(() => {
           <h1 className="text-4xl font-black text-white tracking-tighter">
             Welcome,{" "}
             <span className="shimmer-gold">
-              Prof. {session?.user?.name?.split(" ")[0]}
+              {session?.user?.name?.split(" ")[0]}
             </span>
           </h1>
           <p className="text-slate-500 font-medium">
@@ -52,9 +82,19 @@ useEffect(() => {
           </p>
         </div>
         <div className="flex gap-3">
-          <button className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-bold hover:bg-white/10 transition-all">
+          {/* 
+
+          /tutors/eFGPkhhf8c58hwR20lrdiztSaCnex2HL
+          /tutors/b552a3dc-4f05-443f-9abf-c9a8ac43461f
+
+
+          */}
+          <Link
+            href={`/tutors/${session?.user?.id}`}
+            className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-bold hover:bg-white/10 transition-all"
+          >
             View Public Profile
-          </button>
+          </Link>
         </div>
       </header>
 
@@ -62,27 +102,27 @@ useEffect(() => {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard
           title="Revenue"
-          value={`$${stats.totalRevenue}`}
+          value={`$${totalRevenue}`}
           icon={<DollarSign className="text-primary" />}
-          trend="+12% this month"
+          trend="Lifetime earnings"
         />
         <StatCard
           title="Sessions"
-          value={stats.totalSessions}
+          value={bookings.length}
           icon={<Calendar className="text-primary" />}
-          trend="4 today"
+          trend={`${bookings.filter((b) => b.status === "CONFIRMED").length} upcoming`}
         />
         <StatCard
           title="Rating"
-          value={stats.avgRating}
+          value="4.9" // Placeholder until your stats API is ready
           icon={<Star className="text-primary" />}
           trend="Top 5% Tutor"
         />
         <StatCard
           title="Students"
-          value={stats.activeStudents}
+          value={activeStudents}
           icon={<Users className="text-primary" />}
-          trend="2 new joins"
+          trend="Unique learners"
         />
       </div>
 
@@ -102,43 +142,69 @@ useEffect(() => {
           </div>
 
           <div className="space-y-3">
-            {[1, 2].map((_, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, x: -20 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.1 }}
-              >
-                <SpotlightCard className="p-0 border-white/5">
-                  <div className="flex items-center justify-between p-5 bg-white/[0.02]">
-                    <div className="flex items-center gap-4">
-                      <div className="size-12 rounded-2xl bg-gradient-to-br from-primary/20 to-transparent border border-white/10 flex items-center justify-center text-primary font-bold">
-                        AJ
+            {loading ? (
+              <p className="text-slate-500 animate-pulse">
+                Loading sessions...
+              </p>
+            ) : bookings.length > 0 ? (
+              bookings.map((booking, i) => (
+                <motion.div
+                  key={booking.id}
+                  initial={{ opacity: 0, x: -20 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ delay: i * 0.1 }}
+                >
+                  <SpotlightCard className="p-0 border-white/5">
+                    <div className="flex items-center justify-between p-5 bg-white/[0.02]">
+                      <div className="flex items-center gap-4">
+                        <div className="size-12 rounded-2xl bg-gradient-to-br from-primary/20 to-transparent border border-white/10 flex items-center justify-center text-primary font-bold">
+                          {booking.partnerName.charAt(0)}
+                        </div>
+                        <div>
+                          <h4 className="font-bold text-white">
+                            {booking.partnerName}
+                          </h4>
+                          <p className="text-[10px] text-slate-500 mb-1">
+                            {booking.partnerEmail}
+                          </p>
+                          <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
+                            <Clock className="size-3 text-primary" />
+                            {formatDate(booking.startTime)} •{" "}
+                            {booking.timeSlot.split("-")[0]}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h4 className="font-bold text-white">Alice Johnson</h4>
-                        <p className="text-xs text-slate-500 flex items-center gap-1.5 mt-0.5">
-                          <Clock className="size-3 text-primary" /> 10 Feb •
-                          10:00 AM
-                        </p>
+                      <div className="flex items-center gap-3">
+                        <span
+                          className={cn(
+                            "hidden sm:inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border",
+                            booking.status === "CONFIRMED"
+                              ? "bg-primary/10 text-primary border-primary/20"
+                              : "bg-white/5 text-slate-400 border-white/10",
+                          )}
+                        >
+                          {booking.status}
+                        </span>
+                        <button className="p-2 hover:bg-white/10 rounded-lg text-slate-400">
+                          <ArrowUpRight size={18} />
+                        </button>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className="hidden sm:inline-block px-3 py-1 bg-primary/10 text-primary border border-primary/20 rounded-full text-[10px] font-black uppercase tracking-tighter">
-                        Confirmed
-                      </span>
-                      <button className="p-2 hover:bg-white/10 rounded-lg text-slate-400">
-                        <ArrowUpRight size={18} />
-                      </button>
-                    </div>
-                  </div>
-                </SpotlightCard>
-              </motion.div>
-            ))}
+                  </SpotlightCard>
+                </motion.div>
+              ))
+            ) : (
+              <div className="flex flex-col items-center justify-center py-12 bg-white/[0.02] rounded-3xl border border-dashed border-white/10">
+                <Inbox className="size-10 text-slate-600 mb-3" />
+                <p className="text-slate-500 font-medium">
+                  No sessions booked yet.
+                </p>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* --- Section 4: Sidebar Actions --- */}
+        {/* --- Section 4: Sidebar --- */}
         <div className="space-y-6">
           <SpotlightCard className="bg-primary p-8 border-none relative overflow-hidden group">
             <div className="absolute -right-4 -top-4 size-24 bg-white/20 blur-2xl rounded-full group-hover:bg-white/30 transition-all" />
@@ -150,10 +216,10 @@ useEffect(() => {
                 </span>
               </div>
               <h3 className="text-2xl font-black text-black leading-tight mb-6">
-                Your profile is visible to students.
+                Your profile is live for students.
               </h3>
               <Link
-                href="/tutor/availability"
+                href="/dashboard/tutor/profile"
                 className="block w-full text-center py-4 bg-black text-white rounded-2xl font-black text-sm hover:scale-[1.02] transition-transform"
               >
                 Edit Availability
@@ -169,9 +235,9 @@ useEffect(() => {
               </h3>
             </div>
             <p className="text-slate-400 text-xs leading-relaxed">
-              Tutors who respond within{" "}
-              <span className="text-white font-bold">1 hour</span> are 3x more
-              likely to get booked. Turn on mobile notifications.
+              Tutors with consistent availability get{" "}
+              <span className="text-white font-bold">40% more</span> bookings.
+              Update your calendar weekly!
             </p>
           </SpotlightCard>
         </div>

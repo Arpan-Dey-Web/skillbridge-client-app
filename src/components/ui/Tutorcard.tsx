@@ -5,6 +5,9 @@ import { Button } from "./button";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 
 export default function TutorCard({ tutor }: { tutor: any }) {
+  
+  console.log(tutor);
+
   return (
     <Card className="group relative bg-white/5 hover:bg-white/[0.08] transition-all duration-500 border border-white/10 hover:border-amber-500/50 rounded-[2rem] overflow-hidden">
       <CardContent className="p-0">

@@ -63,7 +63,7 @@ export default function TutorSetupPage() {
 
       if (response.ok) {
         toast.success("Welcome to the elite! Profile live.", { id: toastId });
-        router.push("/tutor/dashboard");
+        router.push("/dashboard/tutor");
       }
     } catch (error) {
       toast.error("Failed to update profile", { id: toastId });

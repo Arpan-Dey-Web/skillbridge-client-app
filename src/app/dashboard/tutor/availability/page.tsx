@@ -48,13 +48,13 @@ const SHIFT_CONFIG = [
 ];
 
 const DAYS = [
-  { label: "Saturday", value: 1 },
-  { label: "Sunday", value: 2 },
-  { label: "Monday", value: 3 },
-  { label: "Tuesday", value: 4 },
-  { label: "Wednesday", value: 5 },
-  { label: "Thursday", value: 6 },
-  { label: "Friday", value: 7 },
+  { label: "Sunday", value: 0 },
+  { label: "Monday", value: 1 },
+  { label: "Tuesday", value: 2 },
+  { label: "Wednesday", value: 3 },
+  { label: "Thursday", value: 4 },
+  { label: "Friday", value: 5 },
+  { label: "Saturday", value: 6 },
 ];
 
 export default function AvailabilityPage() {

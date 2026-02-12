@@ -1,18 +1,30 @@
 "use client";
+
 import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  CheckCircle,
   Video,
   Clock,
   Calendar,
   Loader2,
-  XCircle,
   Trash2,
+  CheckCircle2,
+  Inbox,
 } from "lucide-react";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -31,11 +43,8 @@ export default function TutorBookingRequests() {
   const fetchBookings = async () => {
     try {
       const res = await fetch(
-        // Removed the extra "/tutor" from the URL path
         `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/pending`,
-        {
-          credentials: "include",
-        },
+        { credentials: "include" },
       );
       const json = await res.json();
       if (json.success) setBookings(json.data);
@@ -82,12 +91,8 @@ export default function TutorBookingRequests() {
 
   // --- Reject Logic ---
   const handleReject = async (bookingId: string) => {
-    if (!confirm("Are you sure you want to reject this request?")) return;
-
     setRejectLoading(bookingId);
     try {
-      // NOTE: Ensure you have a DELETE route at /api/bookings/:id
-      // OR a PATCH route for status: "REJECTED"
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/${bookingId}`,
         {
@@ -98,7 +103,7 @@ export default function TutorBookingRequests() {
 
       const json = await res.json();
       if (json.success) {
-        toast.error("Request Rejected");
+        toast.success("Request Rejected Successfully");
         setBookings((prev) => prev.filter((b) => b.id !== bookingId));
       } else {
         toast.error(json.message);
@@ -112,8 +117,8 @@ export default function TutorBookingRequests() {
 
   if (loading)
     return (
-      <div className="p-10 text-center text-slate-500 animate-pulse font-black uppercase tracking-tighter">
-        Loading requests...
+      <div className="flex h-[400px] w-full items-center justify-center">
+        <Loader2 className="size-8 animate-spin text-amber-500" />
       </div>
     );
 
@@ -134,9 +139,10 @@ export default function TutorBookingRequests() {
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              className="py-20 text-center border-2 border-dashed border-white/5 rounded-3xl"
+              className="py-20 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-[2rem] bg-white/[0.01] h-screen"
             >
-              <p className="text-slate-500 font-medium italic">
+              <Inbox className="size-12 text-slate-700 mb-4" />
+              <p className="text-slate-500 font-bold italic uppercase tracking-widest text-xs">
                 No pending requests at the moment.
               </p>
             </motion.div>
@@ -157,17 +163,16 @@ export default function TutorBookingRequests() {
                         <Calendar className="size-7" />
                       </div>
                       <div className="space-y-1">
-                        <h4 className="text-white font-black text-xl leading-none italic uppercase">
+                        <h4 className="text-white font-black text-xl leading-none italic uppercase tracking-tighter">
                           {booking.student.name}
                         </h4>
                         <div className="flex flex-wrap gap-4 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                          <span className="flex items-center gap-1.5">
+                          <span className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-md">
                             <Clock className="size-3 text-amber-500" />
                             {format(new Date(booking.startTime), "p")}
                           </span>
-                          <span className="flex items-center gap-1.5 text-amber-500/60">
-                            <Timer className="size-3" />
-                            {/* Duration logic - usually calculated from startTime/endTime */}
+                          <span className="flex items-center gap-1.5 bg-amber-500/5 text-amber-500/80 px-2 py-1 rounded-md">
+                            <TimerIcon className="size-3" />
                             {Math.round(
                               (new Date(booking.endTime).getTime() -
                                 new Date(booking.startTime).getTime()) /
@@ -179,12 +184,12 @@ export default function TutorBookingRequests() {
                       </div>
                     </div>
 
-                    {/* 2. Meet Link Input & Actions */}
+                    {/* 2. Meet Link & Actions */}
                     <div className="flex flex-col md:flex-row items-center gap-3 w-full lg:w-auto">
                       <div className="relative w-full md:w-64">
                         <Video className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
                         <Input
-                          placeholder="Paste Google Meet Link..."
+                          placeholder="Google Meet Link..."
                           value={meetLinks[booking.id] || ""}
                           onChange={(e) =>
                             setMeetLinks({
@@ -197,38 +202,60 @@ export default function TutorBookingRequests() {
                       </div>
 
                       <div className="flex items-center gap-2 w-full md:w-auto">
-                        {/* Confirm Button */}
                         <Button
                           onClick={() => handleApprove(booking.id)}
-                          disabled={
-                            actionLoading === booking.id ||
-                            rejectLoading === booking.id
-                          }
-                          className="flex-1 md:flex-none bg-white text-black hover:bg-amber-500 font-black px-6 h-12 rounded-xl transition-all active:scale-95 uppercase tracking-tighter"
+                          disabled={!!actionLoading || !!rejectLoading}
+                          className="flex-1 md:flex-none bg-amber-500 text-black hover:bg-white font-black px-6 h-12 rounded-xl transition-all active:scale-95 uppercase tracking-tighter"
                         >
                           {actionLoading === booking.id ? (
                             <Loader2 className="animate-spin size-4" />
                           ) : (
-                            "Confirm"
+                            <>
+                              <CheckCircle2 className="size-4 mr-2" />
+                              Confirm
+                            </>
                           )}
                         </Button>
 
-                        {/* Reject Button */}
-                        <Button
-                          variant="ghost"
-                          onClick={() => handleReject(booking.id)}
-                          disabled={
-                            actionLoading === booking.id ||
-                            rejectLoading === booking.id
-                          }
-                          className="bg-red-500/5 hover:bg-red-500 hover:text-white text-red-500 size-12 p-0 rounded-xl border border-red-500/10 transition-all active:scale-95"
-                        >
-                          {rejectLoading === booking.id ? (
-                            <Loader2 className="animate-spin size-4" />
-                          ) : (
-                            <Trash2 className="size-5" />
-                          )}
-                        </Button>
+                        {/* AlertDialog for Rejecting */}
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              disabled={!!actionLoading || !!rejectLoading}
+                              className="bg-red-500/5 hover:bg-red-500 hover:text-white text-red-500 size-12 p-0 rounded-xl border border-red-500/10 transition-all active:scale-95"
+                            >
+                              {rejectLoading === booking.id ? (
+                                <Loader2 className="animate-spin size-4" />
+                              ) : (
+                                <Trash2 className="size-5" />
+                              )}
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent className="bg-slate-900 border-white/10 text-white">
+                            <AlertDialogHeader>
+                              <AlertDialogTitle className="text-xl font-black uppercase italic">
+                                Are you{" "}
+                                <span className="text-red-500">Sure?</span>
+                              </AlertDialogTitle>
+                              <AlertDialogDescription className="text-slate-400">
+                                Rejection will remove this request from your
+                                pending list. This action cannot be undone.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel className="bg-white/5 border-white/10 text-white hover:bg-white/10">
+                                Keep Request
+                              </AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleReject(booking.id)}
+                                className="bg-red-600 hover:bg-red-700 text-white font-bold"
+                              >
+                                Yes, Reject
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </div>
                     </div>
                   </div>
@@ -242,8 +269,7 @@ export default function TutorBookingRequests() {
   );
 }
 
-// Added Timer icon import for the duration display
-function Timer({ className }: { className?: string }) {
+function TimerIcon({ className }: { className?: string }) {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"

@@ -1,4 +1,5 @@
 "use client";
+
 import { authClient } from "@/lib/auth-client";
 import {
   Users,
@@ -10,58 +11,87 @@ import {
   TrendingUp,
   ArrowUpRight,
   Inbox,
+  Loader2,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { motion } from "framer-motion";
 import { redirect } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
 
 export default function TutorDashboard() {
   const { data: session } = authClient.useSession();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tutor, setTutors] = useState([]);
-  // Redirect based on role
-  if (session?.user?.role === "STUDENT") redirect("/dashboard");
-  if (session?.user?.role === "ADMIN") redirect("/dashboard/admin");
-  console.log(session);
-  // Dynamic stats calculation from real data
-  const totalRevenue = bookings.reduce((acc, curr) => acc + curr.totalPrice, 0);
-  const activeStudents = new Set(bookings.map((b) => b.partnerEmail)).size;
 
+  // ১. সেশন ভ্যালিডেশন এবং রিডাইরেক্ট
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/bookings`, {
-      credentials: "include",
-    })
-      .then((res) => {
+    if (session && session.user?.role === "STUDENT") redirect("/dashboard");
+    if (session && session.user?.role === "ADMIN") redirect("/dashboard/admin");
+  }, [session]);
+
+  // ২. ডাটা ফেচিং
+  useEffect(() => {
+    const fetchBookings = async () => {
+      try {
+        const res = await fetch(
+          `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings`,
+          {
+            credentials: "include",
+          },
+        );
         if (res.status === 403) throw new Error("Session invalid");
-        return res.json();
-      })
-      .then((res) => {
-        if (res.success) setBookings(res.data);
-      })
-      .catch((err) => toast.error(err.message))
-      .finally(() => setLoading(false));
-  }, []);
+        const data = await res.json();
+        if (data.success) {
+          setBookings(data.data);
+        }
+      } catch (err: any) {
+        toast.error(err.message);
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/tutors/${session?.userId}`)
-      .then((res) => res.json())
-      .then((data) => setTutors(data))
-      .catch((err) => toast.error(err.message))
-      .finally(() => setLoading(false));
-  }, []);
+    if (session?.user?.id) {
+      fetchBookings();
+    }
+  }, [session]);
 
-  // Helper to format the Date
+  // ৩. শুধুমাত্র CONFIRMED সেশনগুলো ফিল্টার এবং সর্ট করা
+  const confirmedBookings = useMemo(() => {
+    return bookings
+      .filter((b) => b.status === "CONFIRMED")
+      .sort(
+        (a, b) =>
+          new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+      );
+  }, [bookings]);
+  console.log(confirmedBookings);
+  // ৪. ডাইনামিক স্ট্যাটস (শুধুমাত্র কনফার্মড ডাটা থেকে)
+  const totalRevenue = confirmedBookings.reduce(
+    (acc, curr) => acc + curr.totalPrice,
+    0,
+  );
+  const activeStudents = new Set(confirmedBookings.map((b) => b.partnerEmail))
+    .size;
+
   const formatDate = (dateStr: string) => {
     return new Date(dateStr).toLocaleDateString("en-US", {
       day: "numeric",
       month: "short",
     });
   };
+
+  if (loading) {
+    return (
+      <div className="flex h-[400px] w-full items-center justify-center">
+        <Loader2 className="size-10 animate-spin text-amber-500/50" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-10">
@@ -79,13 +109,6 @@ export default function TutorDashboard() {
           </p>
         </div>
         <div className="flex gap-3">
-          {/* 
-
-          /tutors/eFGPkhhf8c58hwR20lrdiztSaCnex2HL
-          /tutors/b552a3dc-4f05-443f-9abf-c9a8ac43461f
-
-
-          */}
           <Link
             href={`/tutors/${session?.user?.id}`}
             className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-bold hover:bg-white/10 transition-all"
@@ -100,51 +123,47 @@ export default function TutorDashboard() {
         <StatCard
           title="Revenue"
           value={`$${totalRevenue}`}
-          icon={<DollarSign className="text-primary" />}
-          trend="Lifetime earnings"
+          icon={<DollarSign className="text-amber-500" />}
+          trend="Confirmed earnings"
         />
         <StatCard
           title="Sessions"
-          value={bookings.length}
-          icon={<Calendar className="text-primary" />}
-          trend={`${bookings.filter((b) => b.status === "CONFIRMED").length} upcoming`}
+          value={confirmedBookings.length}
+          icon={<Calendar className="text-amber-500" />}
+          trend="Upcoming confirmed"
         />
         <StatCard
           title="Rating"
-          value="4.9" // Placeholder until your stats API is ready
-          icon={<Star className="text-primary" />}
+          value="4.9"
+          icon={<Star className="text-amber-500" />}
           trend="Top 5% Tutor"
         />
         <StatCard
           title="Students"
           value={activeStudents}
-          icon={<Users className="text-primary" />}
+          icon={<Users className="text-amber-500" />}
           trend="Unique learners"
         />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* --- Section 3: Upcoming Bookings --- */}
+        {/* --- Section 3: Upcoming Confirmed Bookings --- */}
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xl font-bold text-white tracking-tight">
-              Upcoming Sessions
+              Confirmed Sessions
             </h2>
             <Link
               href="/dashboard/sessions"
-              className="text-xs font-bold text-primary hover:underline uppercase tracking-widest"
+              className="text-xs font-bold text-amber-500 hover:underline uppercase tracking-widest"
             >
               View All
             </Link>
           </div>
 
           <div className="space-y-3">
-            {loading ? (
-              <p className="text-slate-500 animate-pulse">
-                Loading sessions...
-              </p>
-            ) : bookings.length > 0 ? (
-              bookings.map((booking, i) => (
+            {confirmedBookings.length > 0 ? (
+              confirmedBookings.map((booking, i) => (
                 <motion.div
                   key={booking.id}
                   initial={{ opacity: 0, x: -20 }}
@@ -154,7 +173,7 @@ export default function TutorDashboard() {
                   <SpotlightCard className="p-0 border-white/5">
                     <div className="flex items-center justify-between p-5 bg-white/[0.02]">
                       <div className="flex items-center gap-4">
-                        <div className="size-12 rounded-2xl bg-gradient-to-br from-primary/20 to-transparent border border-white/10 flex items-center justify-center text-primary font-bold">
+                        <div className="size-12 rounded-2xl bg-gradient-to-br from-amber-500/20 to-transparent border border-white/10 flex items-center justify-center text-amber-500 font-bold">
                           {booking.partnerName.charAt(0)}
                         </div>
                         <div>
@@ -165,26 +184,30 @@ export default function TutorDashboard() {
                             {booking.partnerEmail}
                           </p>
                           <p className="text-xs text-slate-400 flex items-center gap-1.5 mt-0.5">
-                            <Clock className="size-3 text-primary" />
+                            <Clock className="size-3 text-amber-500" />
                             {formatDate(booking.startTime)} •{" "}
                             {booking.timeSlot.split("-")[0]}
                           </p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <span
-                          className={cn(
-                            "hidden sm:inline-block px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border",
-                            booking.status === "CONFIRMED"
-                              ? "bg-primary/10 text-primary border-primary/20"
-                              : "bg-white/5 text-slate-400 border-white/10",
-                          )}
-                        >
+                        <span className="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border bg-amber-500/10 text-amber-500 border-amber-500/20">
                           {booking.status}
                         </span>
-                        <button className="p-2 hover:bg-white/10 rounded-lg text-slate-400">
-                          <ArrowUpRight size={18} />
-                        </button>
+                        <Link
+                          href={booking.meetLink || "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className={cn(
+                            "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest transition-all",
+                            booking.meetLink
+                              ? "bg-amber-500 text-black hover:bg-white shadow-lg shadow-amber-500/20"
+                              : "bg-white/5 text-slate-500 cursor-not-allowed border border-white/5",
+                          )}
+                        >
+                          <ArrowUpRight className="size-3" />
+                          Join Meeting
+                        </Link>
                       </div>
                     </div>
                   </SpotlightCard>
@@ -194,7 +217,7 @@ export default function TutorDashboard() {
               <div className="flex flex-col items-center justify-center py-12 bg-white/[0.02] rounded-3xl border border-dashed border-white/10">
                 <Inbox className="size-10 text-slate-600 mb-3" />
                 <p className="text-slate-500 font-medium">
-                  No sessions booked yet.
+                  No confirmed sessions yet.
                 </p>
               </div>
             )}
@@ -203,7 +226,7 @@ export default function TutorDashboard() {
 
         {/* --- Section 4: Sidebar --- */}
         <div className="space-y-6">
-          <SpotlightCard className="bg-primary p-8 border-none relative overflow-hidden group">
+          <SpotlightCard className="bg-amber-500 p-8 border-none relative overflow-hidden group">
             <div className="absolute -right-4 -top-4 size-24 bg-white/20 blur-2xl rounded-full group-hover:bg-white/30 transition-all" />
             <div className="relative z-10">
               <div className="flex items-center gap-2 mb-4">
@@ -226,7 +249,7 @@ export default function TutorDashboard() {
 
           <SpotlightCard className="p-6 border-white/10">
             <div className="flex items-center gap-3 mb-4">
-              <TrendingUp className="text-primary size-5" />
+              <TrendingUp className="text-amber-500 size-5" />
               <h3 className="text-sm font-bold text-white uppercase tracking-widest">
                 Growth Tip
               </h3>
@@ -247,7 +270,7 @@ function StatCard({ title, value, icon, trend }: any) {
   return (
     <SpotlightCard className="p-6 border-white/5 bg-white/[0.02]">
       <div className="flex justify-between items-start mb-4">
-        <div className="p-2.5 rounded-xl bg-primary/10 border border-primary/20">
+        <div className="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20">
           {icon}
         </div>
         <span className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
@@ -258,7 +281,7 @@ function StatCard({ title, value, icon, trend }: any) {
         <h3 className="text-3xl font-black text-white tracking-tighter mb-1">
           {value}
         </h3>
-        <p className="text-[10px] font-bold text-primary/60 uppercase tracking-tighter">
+        <p className="text-[10px] font-bold text-amber-500/60 uppercase tracking-tighter">
           {trend}
         </p>
       </div>

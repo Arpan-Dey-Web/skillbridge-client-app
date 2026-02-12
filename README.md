@@ -299,36 +299,4 @@ primary: #10B981
 secondary: #D8B4FE
 accent: #ECFDF5
 
-## Folder Structure
-```
-app
-------(pulicLayout) (folder)
-----------about- page.tsx
-----------login- page.tsx
-----------register- page.tsx
-----------tutors- page.tsx
-----------layout.tsx
-----------page.tsx
-
--------dashboard  (folder)
---------------admin (folder)
----------------------bookings- page.tsx
----------------------categories- page.tsx
----------------------dashboard- page.tsx
----------------------users- page.tsx
----------------------page.tsx
-              
---------------tutor (folder)
----------------------availability - page.tsx
----------------------dashboard - page.tsx
----------------------profile - page.tsx
----------------------layout.tsx
----------------------page.tsx
-              
---------------bookings - page.tsx
---------------profile - page.tsx
---------------layout.tsx
---------------page.tsx
-
-                     
 ```

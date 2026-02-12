@@ -20,7 +20,7 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
 
-// Helper to convert "11:00 AM" to a comparable number (e.g., 1100 or 1300)
+// Helper to convert "11:00 AM" to a comparable number
 const parseTimeToNumber = (timeStr: string) => {
   const [time, modifier] = timeStr.split(" ");
   let [hours, minutes] = time.split(":").map(Number);
@@ -29,16 +29,18 @@ const parseTimeToNumber = (timeStr: string) => {
   return hours * 100 + minutes;
 };
 
+const daysOrder = [
+  "Sunday",
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+];
+
 function getDayName(day: number) {
-  return [
-    "Sunday",
-    "Monday",
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    "Friday",
-    "Saturday",
-  ][day];
+  return daysOrder[day];
 }
 
 export default function TutorProfilePage() {
@@ -54,7 +56,6 @@ export default function TutorProfilePage() {
 
   const durations = [5, 10, 15, 30];
 
-  // --- Real-time Bangladesh Context ---
   const dhakaContext = useMemo(() => {
     const now = new Date();
     const formatter = new Intl.DateTimeFormat("en-US", {
@@ -72,7 +73,6 @@ export default function TutorProfilePage() {
       parts.find((p) => p.type === "minute")?.value || "0",
     );
 
-    // Get simple YYYY-MM-DD for comparison
     const dateString = new Intl.DateTimeFormat("en-CA", {
       timeZone: "Asia/Dhaka",
     }).format(now);
@@ -80,7 +80,8 @@ export default function TutorProfilePage() {
     return {
       day,
       timeValue: hour * 100 + minute,
-      dateString, // e.g., "2026-02-11"
+      dateString,
+      dayIndex: daysOrder.indexOf(day || ""),
     };
   }, []);
 
@@ -91,12 +92,9 @@ export default function TutorProfilePage() {
         .then((res) => {
           if (res.success) {
             setTutor(res.data);
-
-            // CHECK IF LOGGED IN STUDENT ALREADY HAS A BOOKING TODAY
             if (session?.user?.email) {
               const alreadyBooked = res.data.bookings?.some((b: any) => {
                 const bookingDate = b.startTime.split("T")[0];
-                // Replace with logic matching your student identifier
                 return (
                   bookingDate === dhakaContext.dateString &&
                   b.studentId === (session.user as any).id
@@ -110,11 +108,9 @@ export default function TutorProfilePage() {
         .catch(() => setLoading(false));
     }
   }, [tutorId, session, dhakaContext.dateString]);
-
+  console.log(tutor);
   const bookSession = async () => {
-    if (!selectedSlot) return;
-    if (hasBookedToday)
-      return toast.error("You have already booked a session today!");
+    if (!selectedSlot) return toast.error("Please select a time slot first!");
 
     const toastId = toast.loading("Sending request to mentor...");
 
@@ -124,12 +120,13 @@ export default function TutorProfilePage() {
       if (modifier === "PM" && hours < 12) hours += 12;
       if (modifier === "AM" && hours === 12) hours = 0;
 
-      // Ensure booking is for today's date
-      const startObj = new Date();
-      startObj.setHours(hours, minutes, 0, 0);
+      const targetDate = new Date();
+      const dayDiff = (selectedSlot.dayOfWeek - dhakaContext.dayIndex + 7) % 7;
+      targetDate.setDate(targetDate.getDate() + dayDiff);
+      targetDate.setHours(hours, minutes, 0, 0);
 
-      const endObj = new Date(startObj);
-      endObj.setMinutes(startObj.getMinutes() + duration);
+      const endObj = new Date(targetDate);
+      endObj.setMinutes(targetDate.getMinutes() + duration);
 
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings`,
@@ -139,18 +136,17 @@ export default function TutorProfilePage() {
           credentials: "include",
           body: JSON.stringify({
             tutorProfileId: tutor.id,
-            startTime: startObj.toISOString(),
+            startTime: targetDate.toISOString(),
             endTime: endObj.toISOString(),
           }),
         },
       );
 
       const result = await response.json();
-
       if (!response.ok) throw new Error(result.message || "Booking failed");
 
       toast.success("Request sent! Waiting for approval.", { id: toastId });
-      setHasBookedToday(true); // Disable further bookings immediately
+      setHasBookedToday(true);
       setSelectedSlot(null);
     } catch (error: any) {
       toast.error(error.message || "An unexpected error occurred", {
@@ -161,7 +157,7 @@ export default function TutorProfilePage() {
 
   if (loading)
     return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center text-amber-500 font-bold uppercase tracking-tighter italic">
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center text-amber-500 font-bold uppercase italic">
         Loading Mentor...
       </div>
     );
@@ -213,7 +209,6 @@ export default function TutorProfilePage() {
                   </div>
                 </div>
               </div>
-
               <div className="mt-12">
                 <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
                   <span className="size-2 bg-amber-500 rounded-full" /> About
@@ -222,45 +217,6 @@ export default function TutorProfilePage() {
                 <p className="text-slate-400 text-lg leading-relaxed">
                   {tutor.bio}
                 </p>
-              </div>
-            </section>
-
-            {/* RESTORED FEEDBACK SECTION */}
-            <section className="space-y-6">
-              <h3 className="text-2xl font-black italic flex items-center gap-3">
-                <MessageSquare className="w-6 h-6 text-amber-500" /> Student
-                Feedback
-              </h3>
-              <div className="grid grid-cols-1 gap-4">
-                {tutor.bookings?.filter((b: any) => b.review).length > 0 ? (
-                  tutor.bookings.map((booking: any) => (
-                    <Card
-                      key={booking.id}
-                      className="bg-white/5 border-white/10 rounded-3xl"
-                    >
-                      <CardContent className="p-8">
-                        <div className="flex items-center gap-1 text-amber-500 mb-4">
-                          {[...Array(5)].map((_, i) => (
-                            <Star
-                              key={i}
-                              className={`w-4 h-4 ${i < booking.review.rating ? "fill-current" : "opacity-20"}`}
-                            />
-                          ))}
-                        </div>
-                        <p className="text-white italic">
-                          "{booking.review.comment}"
-                        </p>
-                        <p className="mt-4 text-[10px] text-slate-500 font-black tracking-widest uppercase">
-                          — {booking.review.student?.name}
-                        </p>
-                      </CardContent>
-                    </Card>
-                  ))
-                ) : (
-                  <div className="p-12 text-center border border-dashed border-white/10 rounded-3xl text-slate-500 italic">
-                    No reviews found.
-                  </div>
-                )}
               </div>
             </section>
           </div>
@@ -308,7 +264,7 @@ export default function TutorProfilePage() {
                 <div>
                   <h4 className="font-bold mb-4 text-white uppercase tracking-widest text-[10px] flex items-center gap-2">
                     <Clock className="size-4 text-amber-500" /> 2. Available
-                    Today
+                    Schedule
                   </h4>
                   <div className="space-y-3">
                     {tutor.availability?.map((slot: any) => {
@@ -317,34 +273,37 @@ export default function TutorProfilePage() {
                       const slotTimeValue = parseTimeToNumber(slot.startTime);
                       const hasPassed =
                         isToday && slotTimeValue <= dhakaContext.timeValue;
-                      const canBook = isToday && !hasPassed;
+
+                      // logic simplified to allow selection always
+                      const isAvailable = isToday ? !hasPassed : true;
 
                       return (
                         <button
                           key={slot.id}
-                          disabled={!canBook || hasBookedToday}
+                          // DISABLED FEATURE REMOVED
                           onClick={() => setSelectedSlot(slot)}
                           className={cn(
-                            "w-full flex justify-between items-center p-4 rounded-2xl border transition-all",
-                            !canBook || hasBookedToday
-                              ? "opacity-20 cursor-not-allowed border-white/5 grayscale"
-                              : selectedSlot?.id === slot.id
-                                ? "border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/5"
-                                : "bg-white/5 border-white/10 hover:border-amber-500/30",
+                            "w-full flex justify-between items-center p-4 rounded-2xl border transition-all active:scale-95",
+                            selectedSlot?.id === slot.id
+                              ? "border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/5"
+                              : "bg-white/5 border-white/10 hover:border-amber-500/30",
+                            !isAvailable && "opacity-60 italic", // Visual hint only
                           )}
                         >
                           <div className="flex flex-col items-start">
                             <span
                               className={cn(
                                 "font-black text-[10px] uppercase tracking-widest",
-                                canBook ? "text-amber-500" : "text-slate-500",
+                                isAvailable
+                                  ? "text-amber-500"
+                                  : "text-slate-500",
                               )}
                             >
-                              {isToday ? "Today" : dayName}
+                              {dayName}
                             </span>
-                            {hasPassed && (
+                            {hasPassed && isToday && (
                               <span className="text-[8px] text-red-500 font-black uppercase">
-                                Expired
+                                Time Passed
                               </span>
                             )}
                           </div>
@@ -360,30 +319,23 @@ export default function TutorProfilePage() {
                 <Button
                   className={cn(
                     "w-full h-16 rounded-2xl text-md font-black uppercase tracking-widest transition-all",
-                    selectedSlot && !hasBookedToday
+                    selectedSlot
                       ? "bg-white text-black hover:bg-amber-500"
                       : "bg-white/10 text-slate-600",
                   )}
-                  disabled={!selectedSlot || hasBookedToday}
+                  // DISABLED FEATURE REMOVED
                   onClick={bookSession}
                 >
-                  {hasBookedToday
-                    ? "Daily Limit Reached"
-                    : selectedSlot
-                      ? "Secure Session"
-                      : "Select Time"}
+                  {selectedSlot ? "Secure Session" : "Select Time"}
                 </Button>
 
-                {!selectedSlot && (
-                  <div className="flex items-start gap-2 p-4 bg-amber-500/5 border border-amber-500/10 rounded-2xl">
-                    <AlertCircle className="size-4 text-amber-500 shrink-0 mt-0.5" />
-                    <p className="text-[9px] text-amber-200/60 font-black uppercase tracking-wider leading-tight">
-                      {hasBookedToday
-                        ? "You can only book one session per tutor per day."
-                        : "Bookings close exactly when the session start time passes in Bangladesh."}
-                    </p>
-                  </div>
-                )}
+                <div className="flex items-start gap-2 p-4 bg-amber-500/5 border border-amber-500/10 rounded-2xl">
+                  <AlertCircle className="size-4 text-amber-500 shrink-0 mt-0.5" />
+                  <p className="text-[9px] text-amber-200/60 font-black uppercase tracking-wider leading-tight">
+                    All slots are currently unlocked for selection. Please
+                    ensure you select a future time.
+                  </p>
+                </div>
               </CardContent>
             </Card>
           </aside>

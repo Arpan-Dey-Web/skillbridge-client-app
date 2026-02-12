@@ -30,12 +30,14 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import Link from "next/link";
 
 export default function TotalUsers() {
   const [stats, setStats] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]); // Initialize as empty array
   const [loading, setLoading] = useState(true);
 
+  console.log(users);
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/users/stats`, {
       credentials: "include",
@@ -136,7 +138,7 @@ export default function TotalUsers() {
       </div>
 
       {/* --- SEARCH & FILTERS --- */}
-      <div className="flex flex-wrap items-center gap-4 bg-white/[0.02] p-4 rounded-2xl border border-white/5">
+      {/* <div className="flex flex-wrap items-center gap-4 bg-white/[0.02] p-4 rounded-2xl border border-white/5">
         <div className="relative flex-1 min-w-[300px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
           <Input
@@ -155,7 +157,7 @@ export default function TotalUsers() {
         >
           <Filter className="size-4 mr-2 text-amber-500" /> Advanced
         </Button>
-      </div>
+      </div> */}
 
       {/* --- USER TABLE --- */}
       <SpotlightCard className="p-0 border-white/5 overflow-hidden bg-white/[0.01]">
@@ -266,14 +268,17 @@ export default function TotalUsers() {
                           className="bg-[#0f172a] border-white/10 text-white"
                         >
                           <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                            Management
+                            Manage User
                           </DropdownMenuLabel>
-                          <DropdownMenuItem className="focus:bg-amber-500 focus:text-black cursor-pointer">
-                            <ExternalLink className="size-4 mr-2" /> View Full
-                            Profile
+                          <DropdownMenuItem className="focus:bg-amber-500 focus:text-black cursor-pointer ">
+                            <ExternalLink className="size-4 mr-2" />
+                            <Link
+                              href={`/dashboard/admin/users/user/${user.id}`}
+                            >
+                              View Profile
+                            </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator className="bg-white/5" />
-
                           {/* Ban/Unban Dynamic Button */}
                           <DropdownMenuItem
                             onClick={() =>

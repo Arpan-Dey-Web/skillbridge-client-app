@@ -44,8 +44,8 @@ export default function StudentBookingsClient({
   initialBookings,
 }: {
   initialBookings: Booking[];
-    }) {
-    console.log(initialBookings);
+}) {
+  console.log(initialBookings);
   const [bookings, setBookings] = useState<Booking[]>(initialBookings);
   console.log(bookings);
   const [isReviewOpen, setIsReviewOpen] = useState(false);
@@ -77,6 +77,7 @@ export default function StudentBookingsClient({
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
+          credentials: "include",
           body: JSON.stringify({
             bookingId: selectedBooking?.id,
             rating,

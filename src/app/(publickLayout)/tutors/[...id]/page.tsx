@@ -8,17 +8,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import {
   Star,
-  MessageSquare,
   ShieldCheck,
   ArrowLeft,
   Clock,
   Timer,
   AlertCircle,
+  MessageSquareQuote,
+  Quote,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
+import { format } from "date-fns";
 
 // Helper to convert "11:00 AM" to a comparable number
 const parseTimeToNumber = (timeStr: string) => {
@@ -108,10 +110,9 @@ export default function TutorProfilePage() {
         .catch(() => setLoading(false));
     }
   }, [tutorId, session, dhakaContext.dateString]);
-  console.log(tutor);
+
   const bookSession = async () => {
     if (!selectedSlot) return toast.error("Please select a time slot first!");
-
     const toastId = toast.loading("Sending request to mentor...");
 
     try {
@@ -155,10 +156,15 @@ export default function TutorProfilePage() {
     }
   };
 
+  // Extract reviews from bookings
+  const reviews =
+    tutor?.bookings?.filter((b: any) => b.review).map((b: any) => b.review) ||
+    [];
+
   if (loading)
     return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center text-amber-500 font-bold uppercase italic">
-        Loading Mentor...
+      <div className="min-h-screen bg-[#020617] flex items-center justify-center text-amber-500 font-bold uppercase italic animate-pulse">
+        Loading Mentor Profile...
       </div>
     );
 
@@ -183,9 +189,9 @@ export default function TutorProfilePage() {
           <div className="lg:col-span-2 space-y-16">
             <section>
               <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-                <Avatar className="size-32 border-4 border-white/5">
+                <Avatar className="size-32 border-4 border-white/5 shadow-2xl">
                   <AvatarImage src={tutor.user?.image} />
-                  <AvatarFallback className="bg-amber-500 text-black font-black">
+                  <AvatarFallback className="bg-amber-500 text-black font-black text-2xl">
                     {tutor.user?.name?.[0]}
                   </AvatarFallback>
                 </Avatar>
@@ -198,30 +204,110 @@ export default function TutorProfilePage() {
                       <ShieldCheck className="size-3 mr-1" /> Verified Mentor
                     </Badge>
                   </div>
-                  <p className="text-amber-500 font-bold text-lg uppercase italic">
-                    {tutor.category?.name}
+                  <p className="text-amber-500 font-bold text-lg uppercase italic tracking-wider">
+                    {tutor.category?.name} Expert
                   </p>
-                  <div className="flex items-center gap-2 text-slate-400">
+                  <div className="flex items-center gap-2 text-slate-400 justify-center md:justify-start">
                     <Star className="size-5 fill-amber-500 text-amber-500" />
                     <span className="font-bold text-white text-lg">
                       {tutor.averageRating.toFixed(1)}
                     </span>
+                    <span className="text-xs text-slate-500 font-black uppercase tracking-widest">
+                      ({reviews.length} Reviews)
+                    </span>
                   </div>
                 </div>
               </div>
+
+              {/* ABOUT SECTION */}
               <div className="mt-12">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2">
+                <h3 className="text-xl font-bold mb-4 flex items-center gap-2 uppercase tracking-tighter">
                   <span className="size-2 bg-amber-500 rounded-full" /> About
                   Mentor
                 </h3>
-                <p className="text-slate-400 text-lg leading-relaxed">
-                  {tutor.bio}
+                <p className="text-slate-400 text-lg leading-relaxed italic">
+                  "{tutor.bio}"
                 </p>
+              </div>
+
+              {/* REVIEWS SECTION */}
+              <div className="mt-20 space-y-8">
+                <div className="flex items-center justify-between border-b border-white/5 pb-4">
+                  <h3 className="text-xl font-bold flex items-center gap-2 uppercase tracking-tighter">
+                    <MessageSquareQuote className="size-5 text-amber-500" />{" "}
+                    Student Reviews
+                  </h3>
+                  <Badge
+                    variant="outline"
+                    className="text-slate-500 border-white/10 uppercase tracking-[0.2em] text-[8px]"
+                  >
+                    Verified Feedback
+                  </Badge>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {reviews.length > 0 ? (
+                    reviews.map((review: any) => (
+                      <Card
+                        key={review.id}
+                        className="bg-white/[0.02] border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:bg-white/[0.04] transition-all"
+                      >
+                        <Quote className="absolute -right-2 -top-2 size-16 text-white/[0.03] group-hover:text-amber-500/5 transition-colors" />
+                        <div className="flex flex-col h-full justify-between gap-4">
+                          <div className="space-y-3">
+                            <div className="flex gap-0.5">
+                              {[...Array(5)].map((_, i) => (
+                                <Star
+                                  key={i}
+                                  className={cn(
+                                    "size-3",
+                                    i < review.rating
+                                      ? "fill-amber-500 text-amber-500"
+                                      : "text-white/10",
+                                  )}
+                                />
+                              ))}
+                            </div>
+                            <p className="text-slate-300 text-sm italic leading-relaxed">
+                              "{review.comment}"
+                            </p>
+                          </div>
+
+                          <div className="flex items-center gap-3 pt-4 border-t border-white/5">
+                            <Avatar className="size-8 border border-white/10">
+                              <AvatarImage src={review.student?.image} />
+                              <AvatarFallback className="text-[10px] bg-white/10 font-bold uppercase">
+                                {review.student?.name?.[0]}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="text-[10px] font-black text-white uppercase tracking-widest">
+                                {review.student?.name}
+                              </p>
+                              <p className="text-[8px] text-slate-500 font-bold uppercase tracking-tighter">
+                                {format(
+                                  new Date(review.createdAt),
+                                  "MMMM yyyy",
+                                )}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      </Card>
+                    ))
+                  ) : (
+                    <div className="col-span-full py-12 text-center bg-white/[0.02] rounded-3xl border border-dashed border-white/10">
+                      <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">
+                        No reviews yet for this mentor.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             </section>
           </div>
 
-          {/* RIGHT COLUMN: BOOKING */}
+          {/* RIGHT COLUMN: BOOKING (UNCHANGED) */}
           <aside>
             <Card className="bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden sticky top-8 backdrop-blur-md shadow-2xl">
               <div className="bg-amber-500 p-8 text-black">
@@ -273,21 +359,18 @@ export default function TutorProfilePage() {
                       const slotTimeValue = parseTimeToNumber(slot.startTime);
                       const hasPassed =
                         isToday && slotTimeValue <= dhakaContext.timeValue;
-
-                      // logic simplified to allow selection always
                       const isAvailable = isToday ? !hasPassed : true;
 
                       return (
                         <button
                           key={slot.id}
-                          // DISABLED FEATURE REMOVED
                           onClick={() => setSelectedSlot(slot)}
                           className={cn(
                             "w-full flex justify-between items-center p-4 rounded-2xl border transition-all active:scale-95",
                             selectedSlot?.id === slot.id
                               ? "border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/5"
                               : "bg-white/5 border-white/10 hover:border-amber-500/30",
-                            !isAvailable && "opacity-60 italic", // Visual hint only
+                            !isAvailable && "opacity-60 italic",
                           )}
                         >
                           <div className="flex flex-col items-start">
@@ -323,7 +406,6 @@ export default function TutorProfilePage() {
                       ? "bg-white text-black hover:bg-amber-500"
                       : "bg-white/10 text-slate-600",
                   )}
-                  // DISABLED FEATURE REMOVED
                   onClick={bookSession}
                 >
                   {selectedSlot ? "Secure Session" : "Select Time"}

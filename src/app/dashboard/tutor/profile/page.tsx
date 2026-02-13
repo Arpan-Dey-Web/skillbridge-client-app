@@ -13,10 +13,13 @@ import {
   Loader2,
   Clock,
   CalendarDays,
+  Camera,
 } from "lucide-react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import Image from "next/image";
+import { CldUploadWidget } from "next-cloudinary";
+import { toast } from "sonner";
 
 // Helper to map day numbers to names
 const DAYS_MAP: Record<number, string> = {
@@ -34,12 +37,13 @@ export default function TutorSetupPage() {
   const [tutorData, setTutorData] = useState<any>(null);
   const [availability, setAvailability] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [currentImage, setCurrentImage] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
       if (session?.user?.id) {
+        setCurrentImage(session.user.image || ""); // সেশন থেকে ইমেজ সেট করা
         try {
-          // Fetch Profile and Availability in parallel
           const [profileRes, availRes] = await Promise.all([
             fetch(
               `${process.env.NEXT_PUBLIC_APP_URL}/api/tutor/profile/${session.user.id}`,
@@ -68,6 +72,22 @@ export default function TutorSetupPage() {
       fetchData();
     }
   }, [session, sessionPending]);
+
+  // ইমেজ আপলোড হ্যান্ডলার
+  const onUploadSuccess = async (result: any) => {
+    const uploadedUrl = result.info.secure_url;
+    setCurrentImage(uploadedUrl); // UI আপডেট
+
+    const { error } = await authClient.updateUser({
+      image: uploadedUrl,
+    });
+
+    if (error) {
+      toast.error("Upload successful, but failed to sync profile.");
+    } else {
+      toast.success("Tutor profile identity updated!");
+    }
+  };
 
   if (sessionPending || loading)
     return (
@@ -105,20 +125,42 @@ export default function TutorSetupPage() {
           {/* MAIN PROFILE CARD */}
           <SpotlightCard className="p-8 border-white/10 bg-white/[0.02]">
             <div className="flex flex-col md:flex-row gap-8 items-start md:items-center">
-              <div className="relative size-24 rounded-3xl bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center border border-primary/20 shadow-inner overflow-hidden">
-                {session?.user?.image ? (
-                  <Image
-                    src={session.user.image}
-                    fill
-                    className="object-cover"
-                    alt="Profile"
-                  />
-                ) : (
-                  <User className="size-12 text-primary" />
-                )}
+              {/* IMAGE UPLOAD SECTION */}
+              <div className="relative group">
+                <div className="relative size-28 rounded-[2rem] bg-gradient-to-br from-primary/20 to-transparent flex items-center justify-center border border-primary/20 shadow-inner overflow-hidden">
+                  {currentImage || session?.user?.image ? (
+                    <Image
+                      src={currentImage || session?.user?.image || ""}
+                      fill
+                      className="object-cover group-hover:scale-110 transition-transform duration-500"
+                      alt="Profile"
+                    />
+                  ) : (
+                    <User className="size-12 text-primary" />
+                  )}
+                </div>
+
+                {/* Cloudinary Widget */}
+                <CldUploadWidget
+                  uploadPreset="ml_default" // নিশ্চিত করুন এটি Unsigned Preset
+                  onSuccess={onUploadSuccess}
+                >
+                  {({ open }) => (
+                    <button
+                      onClick={() => open()}
+                      className="absolute inset-0 bg-black/60 backdrop-blur-sm rounded-[2rem] flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 border border-primary/40"
+                    >
+                      <Camera className="text-white size-6 mb-1" />
+                      <span className="text-[8px] font-black text-white uppercase tracking-tighter">
+                        Update
+                      </span>
+                    </button>
+                  )}
+                </CldUploadWidget>
               </div>
+
               <div className="space-y-2">
-                <h2 className="text-3xl font-black text-white uppercase tracking-tight">
+                <h2 className="text-3xl font-black text-white uppercase tracking-tight leading-none">
                   {session?.user?.name}
                 </h2>
                 <div className="flex items-center gap-4">
@@ -126,7 +168,7 @@ export default function TutorSetupPage() {
                     <BookOpen className="size-3" /> Expert Instructor
                   </span>
                   <span className="h-1 w-1 rounded-full bg-slate-700" />
-                  <span className="text-slate-500 font-bold text-xs uppercase">
+                  <span className="text-slate-500 font-bold text-xs uppercase tracking-widest">
                     Level 1 Elite
                   </span>
                 </div>
@@ -134,7 +176,7 @@ export default function TutorSetupPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-10">
-              <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-4">
+              <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-4 hover:border-primary/20 transition-colors">
                 <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
                   <DollarSign className="size-5 text-primary" />
                 </div>
@@ -148,7 +190,7 @@ export default function TutorSetupPage() {
                 </div>
               </div>
 
-              <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-4">
+              <div className="p-6 rounded-2xl bg-white/5 border border-white/10 flex items-center gap-4 hover:border-primary/20 transition-colors">
                 <div className="size-10 rounded-lg bg-primary/10 flex items-center justify-center">
                   <Sparkles className="size-5 text-primary" />
                 </div>
@@ -167,9 +209,11 @@ export default function TutorSetupPage() {
               <p className="text-[10px] text-slate-500 font-black uppercase tracking-[0.2em] mb-4">
                 Professional Narrative
               </p>
-              <p className="text-slate-400 leading-relaxed font-medium">
+              <p className="text-slate-400 leading-relaxed font-medium italic">
+                "
                 {tutorData?.bio ||
                   "No biography provided yet. Hit edit to tell your story."}
+                "
               </p>
             </div>
           </SpotlightCard>
@@ -188,7 +232,7 @@ export default function TutorSetupPage() {
               <Link href="/dashboard/tutor/availability">
                 <Button
                   variant="link"
-                  className="text-xs text-primary font-black uppercase tracking-widest p-0"
+                  className="text-xs text-primary font-black uppercase tracking-widest p-0 hover:no-underline hover:text-white transition-colors"
                 >
                   Manage Schedule
                 </Button>
@@ -203,7 +247,7 @@ export default function TutorSetupPage() {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.05 }}
                     key={slot.id}
-                    className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-between group hover:border-primary/30 transition-all cursor-pointer"
+                    className="p-4 rounded-2xl bg-white/[0.03] border border-white/5 flex items-center justify-between group hover:border-primary/30 transition-all cursor-default"
                   >
                     <div className="space-y-1">
                       <p className="text-[10px] text-primary font-black uppercase tracking-widest">

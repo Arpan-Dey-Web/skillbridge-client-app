@@ -110,15 +110,6 @@ export default function SetTutorProfile() {
   return (
     <div className="min-h-screen py-12 px-4 bg-[#020617] text-slate-200">
       <div className="max-w-2xl mx-auto space-y-10">
-        <Button
-          variant="ghost"
-          onClick={() => router.back()}
-          className="text-slate-500 hover:text-white hover:bg-white/5 group transition-colors"
-        >
-          <ArrowLeft className="size-4 mr-2 group-hover:-translate-x-1 transition-transform" />
-          Back
-        </Button>
-
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-primary text-[10px] font-black uppercase tracking-[0.3em]">
             <Sparkles className="size-3" /> Profile Configuration

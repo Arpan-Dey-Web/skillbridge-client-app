@@ -142,11 +142,7 @@ const Navbar = ({ className }: NavbarProps) => {
                 side="right"
                 className="bg-[#020617] border-white/10 text-white p-8"
               >
-                <SheetHeader>
-                  <SheetTitle className="text-left text-amber-500">
-                    Navigation
-                  </SheetTitle>
-                </SheetHeader>
+              
                 <div className="flex flex-col gap-6 mt-10">
                   {menu.map((item) => (
                     <Link

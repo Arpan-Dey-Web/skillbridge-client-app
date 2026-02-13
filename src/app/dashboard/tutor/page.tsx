@@ -69,7 +69,7 @@ export default function TutorDashboard() {
           new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
       );
   }, [bookings]);
-  console.log(confirmedBookings);
+
   // ৪. ডাইনামিক স্ট্যাটস (শুধুমাত্র কনফার্মড ডাটা থেকে)
   const totalRevenue = confirmedBookings.reduce(
     (acc, curr) => acc + curr.totalPrice,
@@ -108,14 +108,7 @@ export default function TutorDashboard() {
             Your teaching empire is growing. Here is your overview.
           </p>
         </div>
-        <div className="flex gap-3">
-          <Link
-            href={`/tutors/${session?.user?.id}`}
-            className="px-5 py-2.5 rounded-xl bg-white/5 border border-white/10 text-white text-sm font-bold hover:bg-white/10 transition-all"
-          >
-            View Public Profile
-          </Link>
-        </div>
+      
       </header>
 
       {/* --- Section 2: Analytics Cards --- */}

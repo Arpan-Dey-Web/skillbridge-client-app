@@ -190,30 +190,30 @@ export default function TutorProfilePage() {
             <section>
               <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
                 <Avatar className="size-32 border-4 border-white/5 shadow-2xl">
-                  <AvatarImage src={tutor.user?.image} />
+                  <AvatarImage src={tutor?.user?.image} />
                   <AvatarFallback className="bg-amber-500 text-black font-black text-2xl">
-                    {tutor.user?.name?.[0]}
+                    {tutor?.user?.name?.[0]}
                   </AvatarFallback>
                 </Avatar>
                 <div className="text-center md:text-left space-y-3">
                   <div className="flex items-center gap-3">
                     <h1 className="text-5xl font-black italic tracking-tighter">
-                      {tutor.user?.name}
+                      {tutor?.user?.name}
                     </h1>
                     <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 uppercase tracking-widest text-[10px]">
                       <ShieldCheck className="size-3 mr-1" /> Verified Mentor
                     </Badge>
                   </div>
                   <p className="text-amber-500 font-bold text-lg uppercase italic tracking-wider">
-                    {tutor.category?.name} Expert
+                    {tutor?.category?.name} Expert
                   </p>
                   <div className="flex items-center gap-2 text-slate-400 justify-center md:justify-start">
                     <Star className="size-5 fill-amber-500 text-amber-500" />
                     <span className="font-bold text-white text-lg">
-                      {tutor.averageRating.toFixed(1)}
+                      {tutor?.averageRating.toFixed(1)}
                     </span>
                     <span className="text-xs text-slate-500 font-black uppercase tracking-widest">
-                      ({reviews.length} Reviews)
+                      ({reviews?.length} Reviews)
                     </span>
                   </div>
                 </div>
@@ -226,7 +226,7 @@ export default function TutorProfilePage() {
                   Mentor
                 </h3>
                 <p className="text-slate-400 text-lg leading-relaxed italic">
-                  "{tutor.bio}"
+                  {tutor?.bio}
                 </p>
               </div>
 
@@ -269,24 +269,24 @@ export default function TutorProfilePage() {
                               ))}
                             </div>
                             <p className="text-slate-300 text-sm italic leading-relaxed">
-                              "{review.comment}"
+                              {review?.comment}
                             </p>
                           </div>
 
                           <div className="flex items-center gap-3 pt-4 border-t border-white/5">
                             <Avatar className="size-8 border border-white/10">
-                              <AvatarImage src={review.student?.image} />
+                              <AvatarImage src={review?.student?.image} />
                               <AvatarFallback className="text-[10px] bg-white/10 font-bold uppercase">
-                                {review.student?.name?.[0]}
+                                {review?.student?.name?.[0]}
                               </AvatarFallback>
                             </Avatar>
                             <div>
                               <p className="text-[10px] font-black text-white uppercase tracking-widest">
-                                {review.student?.name}
+                                {review?.student?.name}
                               </p>
                               <p className="text-[8px] text-slate-500 font-bold uppercase tracking-tighter">
                                 {format(
-                                  new Date(review.createdAt),
+                                  new Date(review?.createdAt),
                                   "MMMM yyyy",
                                 )}
                               </p>
@@ -316,7 +316,7 @@ export default function TutorProfilePage() {
                 </p>
                 <div className="flex items-baseline gap-1">
                   <h2 className="text-5xl font-black tracking-tighter">
-                    ${((tutor.hourlyRate / 60) * duration).toFixed(2)}
+                    ${((tutor?.hourlyRate / 60) * duration).toFixed(2)}
                   </h2>
                   <span className="text-sm font-bold uppercase">
                     / {duration}m
@@ -353,7 +353,7 @@ export default function TutorProfilePage() {
                     Schedule
                   </h4>
                   <div className="space-y-3">
-                    {tutor.availability?.map((slot: any) => {
+                    {tutor?.availability?.map((slot: any) => {
                       const dayName = getDayName(slot.dayOfWeek);
                       const isToday = dayName === dhakaContext.day;
                       const slotTimeValue = parseTimeToNumber(slot.startTime);

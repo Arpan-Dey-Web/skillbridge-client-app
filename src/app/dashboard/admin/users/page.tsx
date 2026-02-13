@@ -270,12 +270,18 @@ export default function TotalUsers() {
                           <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500">
                             Manage User
                           </DropdownMenuLabel>
-                          <DropdownMenuItem className="focus:bg-amber-500 focus:text-black cursor-pointer ">
-                            <ExternalLink className="size-4 mr-2" />
+                          <DropdownMenuItem
+                            asChild
+                            className="focus:bg-primary focus:text-background cursor-pointer"
+                          >
                             <Link
                               href={`/dashboard/admin/users/user/${user.id}`}
+                              className="flex w-full items-center"
                             >
-                              View Profile
+                              <ExternalLink className="size-4 mr-2" />
+                              <span className="font-bold uppercase tracking-widest text-[10px]">
+                                View Profile
+                              </span>
                             </Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator className="bg-white/5" />

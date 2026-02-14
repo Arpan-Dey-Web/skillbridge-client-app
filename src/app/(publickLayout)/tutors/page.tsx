@@ -17,11 +17,12 @@ import {
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
+  User,
 } from "lucide-react";
 import TutorCard from "@/components/ui/Tutorcard";
 import { cn } from "@/lib/utils";
 
-// --- Fetch Functions ---
+// --- Fetch Functions (Logic preserved) ---
 const fetchCategories = async () => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories`);
   if (!res.ok) throw new Error("Failed to load categories");
@@ -31,7 +32,6 @@ const fetchCategories = async () => {
 
 const fetchTutorsData = async ({ queryKey }: any) => {
   const [_key, { page, search, selectedCategory, maxPrice }] = queryKey;
-
   let url = `${process.env.NEXT_PUBLIC_APP_URL}/api/tutors/all`;
   const params = new URLSearchParams({
     page: page.toString(),
@@ -39,68 +39,65 @@ const fetchTutorsData = async ({ queryKey }: any) => {
     search: search,
     maxPrice: maxPrice,
   });
-
   if (selectedCategory !== "all") {
     url = `${process.env.NEXT_PUBLIC_APP_URL}/api/categories/${selectedCategory}/tutors`;
   }
-
   const res = await fetch(`${url}?${params.toString()}`);
   if (!res.ok) throw new Error("Failed to fetch tutors");
   return res.json();
 };
 
 export default function TutorsPage() {
-  // Filter & Pagination States (Kept for UI control)
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [maxPrice, setMaxPrice] = useState("");
   const [page, setPage] = useState(1);
 
-  // 1. Fetch Categories
   const { data: categories } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
   });
 
-  // 2. Fetch Tutors (Depends on page and filters)
   const { data: tutorResponse, isLoading: loading } = useQuery({
     queryKey: ["tutors", { page, search, selectedCategory, maxPrice }],
     queryFn: fetchTutorsData,
-    placeholderData: (previousData) => previousData, // Smooth transition between pages
+    placeholderData: (previousData) => previousData,
   });
 
   const tutors = tutorResponse?.data || [];
   const totalPages =
     tutorResponse?.pagination?.totalPages || tutorResponse?.totalPages || 1;
 
-
-  const handleFilterApply = () => {
-    setPage(1);
-  };
-
   return (
-    <div className="min-h-screen bg-[#020617] text-white pt-20 font-sans">
+    <div className="min-h-screen bg-background text-foreground pt-24 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="mb-12">
-          <h1 className="text-5xl font-black tracking-tighter mb-3 italic uppercase">
-            Find Your <span className="shimmer-gold">Mentor.</span>
+        {/* Editorial Header */}
+        <div className="mb-16 border-l-4 border-primary pl-8">
+          <h1 className="text-5xl md:text-7xl font-black tracking-tighter mb-4 uppercase leading-none">
+            Find Your{" "}
+            <span className="text-primary italic font-serif lowercase">
+              Mentor.
+            </span>
           </h1>
-          <p className="text-slate-500 font-bold uppercase tracking-[0.2em] text-xs">
-            Elite tutors for high-impact learning systems.
+          <p className="text-muted-foreground font-bold uppercase tracking-[0.3em] text-[10px]">
+            The Global Directory of Elite Academic Architects.
           </p>
         </div>
 
-        <div className="flex flex-col lg:flex-row gap-10">
-          {/* --- Sidebar Filters --- */}
-          <aside className="w-full lg:w-72 space-y-6">
-            <div className="bg-white/[0.02] p-8 rounded-[2.5rem] border border-white/5 sticky top-24 backdrop-blur-md">
-              <h3 className="font-black text-xs uppercase tracking-[0.3em] mb-8 flex items-center gap-3 text-slate-400">
-                <SlidersHorizontal className="w-4 h-4 text-primary" /> Filter
-                Matrix
-              </h3>
+        <div className="flex flex-col lg:grid lg:grid-cols-12 gap-12">
+          {/* --- Sidebar: Filter Matrix --- */}
+          <aside className="lg:col-span-3 space-y-8">
+            <div className="bg-card p-10 rounded-[3rem] border border-border sticky top-28 shadow-sm">
+              <div className="flex items-center gap-3 mb-10 text-foreground">
+                <SlidersHorizontal className="size-4 text-primary" />
+                <h3 className="font-black text-[10px] uppercase tracking-[0.2em]">
+                  Filter Matrix
+                </h3>
+              </div>
 
-              <div className="space-y-8">
-                <div className="space-y-3">
+              <div className="space-y-10">
+                {/* Category Filter */}
+                <div className="space-y-4">
                   <Label className="text-[10px] uppercase tracking-widest text-primary font-black ml-1">
                     Specialization
                   </Label>
@@ -111,13 +108,22 @@ export default function TutorsPage() {
                     }}
                     value={selectedCategory}
                   >
-                    <SelectTrigger className="bg-white/5 border-white/10 h-14 rounded-2xl focus:ring-primary/50 transition-all">
+                    <SelectTrigger className="bg-background border-border h-14 rounded-2xl focus:ring-primary/20 transition-all text-xs font-bold uppercase tracking-tight">
                       <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#0c0c0e] border-white/10 text-white rounded-xl">
-                      <SelectItem value="all">All Categories</SelectItem>
+                    <SelectContent className="bg-card border-border rounded-2xl">
+                      <SelectItem
+                        value="all"
+                        className="text-xs uppercase font-bold"
+                      >
+                        All Categories
+                      </SelectItem>
                       {categories?.map((cat: any) => (
-                        <SelectItem key={cat.id} value={cat.name}>
+                        <SelectItem
+                          key={cat.id}
+                          value={cat.name}
+                          className="text-xs uppercase font-bold"
+                        >
                           {cat.name}
                         </SelectItem>
                       ))}
@@ -125,82 +131,98 @@ export default function TutorsPage() {
                   </Select>
                 </div>
 
-                <div className="space-y-3">
+                {/* Price Filter */}
+                <div className="space-y-4">
                   <Label className="text-[10px] uppercase tracking-widest text-primary font-black ml-1">
                     Budget Limit ($/hr)
                   </Label>
-                  <div className="relative">
+                  <div className="relative group">
                     <Input
                       type="number"
                       placeholder="0.00"
-                      className="bg-white/5 border-white/10 h-14 pl-6 rounded-2xl focus-visible:ring-primary/50 text-lg font-bold"
+                      className="bg-background border-border h-14 pl-6 rounded-2xl focus-visible:ring-primary/20 text-lg font-black"
                       value={maxPrice}
                       onChange={(e) => setMaxPrice(e.target.value)}
                     />
+                    <div className="absolute right-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-muted-foreground/30 uppercase tracking-widest group-focus-within:text-primary transition-colors">
+                      USD
+                    </div>
                   </div>
                 </div>
 
                 <Button
-                  onClick={handleFilterApply}
-                  className="w-full bg-primary hover:bg-white text-black font-black h-14 rounded-2xl transition-all uppercase tracking-widest text-[11px] shadow-lg shadow-primary/10"
+                  onClick={() => setPage(1)}
+                  className="w-full bg-primary text-primary-foreground hover:opacity-90 font-black h-16 rounded-2xl transition-all uppercase tracking-widest text-[11px] shadow-xl shadow-primary/20"
                 >
-                  Apply System Filters
+                  Synchronize Search
                 </Button>
               </div>
             </div>
           </aside>
 
-          {/* --- Main Content --- */}
-          <main className="flex-1 space-y-8">
+          {/* --- Main Content: Tutor Grid --- */}
+          <main className="lg:col-span-9">
             {loading ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {[1, 2, 3, 4].map((i) => (
                   <div
                     key={i}
-                    className="h-64 bg-white/5 animate-pulse rounded-[2.5rem] border border-white/5"
-                  />
+                    className="h-80 bg-card/50 rounded-[3rem] border border-border flex items-center justify-center"
+                  >
+                    <User className="size-12 text-muted-foreground/10" />
+                  </div>
                 ))}
               </div>
             ) : (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                   {tutors?.map((tutor: any) => (
                     <TutorCard key={tutor.id} tutor={tutor} />
                   ))}
                 </div>
 
+                {/* Empty State */}
                 {tutors?.length === 0 && (
-                  <div className="flex flex-col items-center justify-center py-32 text-center border border-dashed border-white/10 rounded-[3rem]">
-                    <Search className="text-slate-800 size-16 mb-4" />
-                    <p className="text-slate-500 font-bold uppercase tracking-widest text-sm">
-                      No synchronized mentors found.
+                  <div className="flex flex-col items-center justify-center py-40 text-center border-2 border-dashed border-border rounded-[4rem] bg-secondary/10">
+                    <Search className="text-muted-foreground/20 size-20 mb-6" />
+                    <h4 className="text-foreground font-black uppercase tracking-[0.2em] text-sm">
+                      No synchronized mentors found
+                    </h4>
+                    <p className="text-muted-foreground text-xs mt-2 uppercase tracking-widest font-bold">
+                      Try adjusting your filter parameters
                     </p>
                   </div>
                 )}
 
-                {/* --- PAGINATION CONTROL --- */}
+                {/* --- Pagination: Refined & Aesthetic --- */}
                 {totalPages > 1 && (
-                  <div className="flex items-center justify-center gap-3 pt-12">
+                  <div className="flex items-center justify-center gap-4 pt-16">
                     <Button
                       variant="outline"
                       size="icon"
                       disabled={page === 1}
-                      onClick={() => setPage((prev) => prev - 1)}
-                      className="rounded-xl border-white/10 bg-white/5 hover:bg-primary hover:text-black size-12"
+                      onClick={() => {
+                        setPage((prev) => prev - 1);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      className="size-14 rounded-2xl border-border bg-card hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-500 shadow-sm"
                     >
-                      <ChevronLeft className="size-5" />
+                      <ChevronLeft className="size-6" />
                     </Button>
 
-                    <div className="flex gap-2">
+                    <div className="flex gap-3 bg-card p-2 border border-border rounded-3xl shadow-sm">
                       {[...Array(totalPages)].map((_, i) => (
                         <Button
                           key={i}
-                          onClick={() => setPage(i + 1)}
+                          onClick={() => {
+                            setPage(i + 1);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }}
                           className={cn(
-                            "size-12 rounded-xl font-black transition-all",
+                            "size-10 rounded-xl font-black transition-all duration-500",
                             page === i + 1
-                              ? "bg-primary text-black scale-110"
-                              : "bg-white/5 border border-white/10 text-slate-400 hover:bg-white/10",
+                              ? "bg-primary text-primary-foreground scale-105 shadow-lg shadow-primary/20"
+                              : "bg-transparent text-muted-foreground hover:text-foreground hover:bg-secondary",
                           )}
                         >
                           {i + 1}
@@ -212,14 +234,17 @@ export default function TutorsPage() {
                       variant="outline"
                       size="icon"
                       disabled={page === totalPages}
-                      onClick={() => setPage((prev) => prev + 1)}
-                      className="rounded-xl border-white/10 bg-white/5 hover:bg-primary hover:text-black size-12"
+                      onClick={() => {
+                        setPage((prev) => prev + 1);
+                        window.scrollTo({ top: 0, behavior: "smooth" });
+                      }}
+                      className="size-14 rounded-2xl border-border bg-card hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all duration-500 shadow-sm"
                     >
-                      <ChevronRight className="size-5" />
+                      <ChevronRight className="size-6" />
                     </Button>
                   </div>
                 )}
-              </>
+              </div>
             )}
           </main>
         </div>

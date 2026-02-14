@@ -58,7 +58,6 @@ export default function StudentBookingsClient({
     setBookings(initialBookings);
   }, [initialBookings]);
 
-  // Tab Filtering (Admin style)
   const filteredBookings = bookings.filter((b) => {
     const isPast = b.status === "COMPLETED" || b.status === "CANCELLED";
     return activeTab === "past" ? isPast : !isPast;
@@ -68,7 +67,7 @@ export default function StudentBookingsClient({
     if (booking.meetLink) {
       window.open(booking.meetLink, "_blank");
       setSelectedBooking(booking);
-      setIsReviewOpen(true); 
+      setIsReviewOpen(true);
     }
   };
 
@@ -115,19 +114,21 @@ export default function StudentBookingsClient({
       {/* --- HEADER --- */}
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic leading-none">
+          <h1 className="text-4xl font-black text-foreground tracking-tighter uppercase italic leading-none">
             Session <span className="shimmer-gold">Operations</span>
           </h1>
-          <p className="text-slate-500 font-medium mt-2">
+          <p className="text-muted-foreground font-medium mt-2 uppercase text-[10px] tracking-widest">
             Track and manage your{" "}
-            <span className="text-white">{bookings.length}</span> recorded
-            sessions.
+            <span className="text-foreground border-b border-primary">
+              {bookings.length}
+            </span>{" "}
+            recorded sessions.
           </p>
         </div>
       </div>
 
-      {/* --- ADMIN STYLE TABS --- */}
-      <div className="flex gap-8 border-b border-white/5">
+      {/* --- TABS --- */}
+      <div className="flex gap-8 border-b border-border">
         {(["upcoming", "past"] as const).map((tab) => (
           <button
             key={tab}
@@ -136,14 +137,14 @@ export default function StudentBookingsClient({
               "pb-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative",
               activeTab === tab
                 ? "text-primary"
-                : "text-slate-500 hover:text-slate-300",
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             {tab} Sessions
             {activeTab === tab && (
               <motion.div
                 layoutId="activeTabIndicator"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_rgba(245,158,11,0.5)]"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_rgba(var(--primary),0.5)]"
               />
             )}
           </button>
@@ -164,13 +165,13 @@ export default function StudentBookingsClient({
               {filteredBookings.map((booking) => (
                 <SpotlightCard
                   key={booking.id}
-                  className="p-0 border-white/5 group overflow-hidden"
+                  className="p-0 border-border group overflow-hidden bg-card/50"
                 >
-                  <div className="p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-6 bg-white/[0.01]">
+                  <div className="p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
                     <div className="flex items-center gap-6">
-                      <Avatar className="size-14 rounded-2xl border border-white/10 group-hover:border-primary/50 transition-colors">
+                      <Avatar className="size-14 rounded-2xl border border-border group-hover:border-primary/50 transition-colors">
                         <AvatarImage src={booking.partnerImage || ""} />
-                        <AvatarFallback className="bg-white/5 text-white/40 font-black">
+                        <AvatarFallback className="bg-secondary text-muted-foreground font-black">
                           {booking.partnerName?.[0]}
                         </AvatarFallback>
                       </Avatar>
@@ -190,11 +191,11 @@ export default function StudentBookingsClient({
                             {booking.status}
                           </span>
                         </div>
-                        <h3 className="text-lg font-bold text-white flex items-center gap-2">
+                        <h3 className="text-lg font-bold text-foreground flex items-center gap-2 uppercase tracking-tight">
                           {booking.partnerName}{" "}
-                          <ArrowUpRight className="size-3 text-slate-600" />
+                          <ArrowUpRight className="size-3 text-muted-foreground/30" />
                         </h3>
-                        <div className="flex items-center gap-4 text-slate-500 text-[10px] font-black uppercase">
+                        <div className="flex items-center gap-4 text-muted-foreground text-[10px] font-black uppercase tracking-tighter">
                           <span className="flex items-center gap-1.5">
                             <CalendarDays className="size-3 text-primary" />{" "}
                             {booking.date}
@@ -207,11 +208,11 @@ export default function StudentBookingsClient({
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 md:justify-end border-t lg:border-t-0 border-white/5 pt-4 lg:pt-0">
+                    <div className="flex items-center gap-3 md:justify-end border-t lg:border-t-0 border-border pt-4 lg:pt-0">
                       {booking.status === "CONFIRMED" && booking.meetLink ? (
                         <Button
                           onClick={() => handleJoinSession(booking)}
-                          className="bg-primary hover:bg-white text-black font-black text-[10px] uppercase h-10 px-8 rounded-xl transition-all"
+                          className="bg-primary hover:bg-foreground hover:text-background text-primary-foreground font-black text-[10px] uppercase h-10 px-8 rounded-xl transition-all shadow-lg shadow-primary/10"
                         >
                           <Video className="mr-2 size-4" /> Join Now
                         </Button>
@@ -220,7 +221,7 @@ export default function StudentBookingsClient({
                           <CheckCircle2 className="size-4" /> Finished
                         </div>
                       ) : (
-                        <span className="text-slate-600 text-[10px] font-black uppercase px-4 italic">
+                        <span className="text-muted-foreground/40 text-[10px] font-black uppercase px-4 italic">
                           Wait for schedule
                         </span>
                       )}
@@ -230,8 +231,8 @@ export default function StudentBookingsClient({
               ))}
             </motion.div>
           ) : (
-            <div className="py-24 text-center border border-dashed border-white/10 rounded-[3rem] bg-white/[0.01]">
-              <p className="text-slate-600 font-black uppercase tracking-widest text-[10px]">
+            <div className="py-24 text-center border border-dashed border-border rounded-[3rem] bg-secondary/20">
+              <p className="text-muted-foreground/50 font-black uppercase tracking-[0.3em] text-[10px]">
                 No activity logged in {activeTab}.
               </p>
             </div>
@@ -244,12 +245,12 @@ export default function StudentBookingsClient({
         open={isReviewOpen}
         onOpenChange={(open) => !submitting && setIsReviewOpen(open)}
       >
-        <DialogContent className="bg-[#0c0c0e] border-white/10 text-white max-w-md rounded-[2.5rem] p-8">
+        <DialogContent className="bg-card border-border text-foreground max-w-md rounded-[2.5rem] p-8 shadow-2xl">
           <DialogHeader className="text-center">
             <DialogTitle className="text-3xl font-black uppercase italic tracking-tighter">
               Session <span className="text-primary">Feedback</span>
             </DialogTitle>
-            <DialogDescription className="text-white/40 font-medium italic mt-2 text-xs">
+            <DialogDescription className="text-muted-foreground font-medium italic mt-2 text-xs uppercase tracking-tight">
               How was your session with {selectedBooking?.partnerName}?
             </DialogDescription>
           </DialogHeader>
@@ -265,8 +266,8 @@ export default function StudentBookingsClient({
                     className={cn(
                       "size-8 transition-all duration-300",
                       rating >= num
-                        ? "fill-primary text-primary drop-shadow-[0_0_10px_rgba(245,158,11,0.4)]"
-                        : "text-white/5",
+                        ? "fill-primary text-primary drop-shadow-[0_0_10px_rgba(var(--primary),0.4)]"
+                        : "text-muted-foreground/20",
                     )}
                   />
                 </button>
@@ -276,21 +277,21 @@ export default function StudentBookingsClient({
               placeholder="Share your experience..."
               value={comment}
               onChange={(e) => setComment(e.target.value)}
-              className="bg-white/[0.03] border-white/10 rounded-2xl min-h-[120px] text-sm"
+              className="bg-secondary border-border rounded-2xl min-h-[120px] text-sm focus-visible:ring-primary"
             />
           </div>
           <DialogFooter>
             <Button
               disabled={submitting || rating === 0}
               onClick={handleSubmitReview}
-              className="w-full bg-primary hover:bg-white text-black font-black uppercase h-14 rounded-xl gap-2 transition-all"
+              className="w-full bg-primary hover:bg-foreground hover:text-background text-primary-foreground font-black uppercase h-14 rounded-xl gap-2 transition-all"
             >
               {submitting ? (
                 <Loader2 className="animate-spin size-4" />
               ) : (
                 <Send className="size-4" />
               )}
-              {submitting ? "Submitting..." : "Complete Session"}
+              {submitting ? "Processing..." : "Submit & Complete Session"}
             </Button>
           </DialogFooter>
         </DialogContent>

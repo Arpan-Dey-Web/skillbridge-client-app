@@ -4,11 +4,9 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Field,
-  FieldDescription,
   FieldError,
   FieldGroup,
   FieldLabel,
-  FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import Link from "next/link";
@@ -19,8 +17,9 @@ import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { Sparkles } from "lucide-react";
 import Image from "next/image";
+
 const formSchema = z.object({
-  email: z.email("Invalid email"),
+  email: z.string().email("Invalid email"),
   password: z.string().min(8, "Minimum Length is 8"),
 });
 
@@ -38,25 +37,24 @@ export function LoginForm({
       onSubmit: formSchema,
     },
     onSubmit: async ({ value }) => {
-    
       const toastId = toast.loading("Logging in User");
       try {
-        const { data, error } = await authClient.signIn.email(value);
+        const { error } = await authClient.signIn.email(value);
         if (error) {
           toast.error(error.message, { id: toastId });
           return;
         }
 
-        toast.success("User Logged in Sucessfully", { id: toastId });
+        toast.success("User Logged in Successfully", { id: toastId });
         router.push("/", { scroll: true });
       } catch (error) {
-        console.log(error);
         toast.error("Something Went Wrong, Please try again", { id: toastId });
       }
     },
   });
+
   const handleGoogleLogin = async () => {
-    const data = authClient.signIn.social({
+    await authClient.signIn.social({
       provider: "google",
       callbackURL: `${process.env.NEXT_PUBLIC_CLIENT_URL}/`,
     });
@@ -64,10 +62,11 @@ export function LoginForm({
 
   return (
     <div className={cn("flex flex-col gap-6", className)} {...props}>
-      <Card className="overflow-hidden p-0 border-white/10 bg-[#020617] shadow-2xl rounded-[2.5rem]">
+      {/* Card: bg-card and border-border adapt to theme */}
+      <Card className="overflow-hidden p-0 border-border bg-card shadow-2xl rounded-[2.5rem]">
         <CardContent className="grid p-0 md:grid-cols-2">
           <form
-            className="p-8 md:p-12 bg-[#020617]"
+            className="p-8 md:p-12 bg-card"
             id="login-form"
             onSubmit={(e) => {
               e.preventDefault();
@@ -78,20 +77,20 @@ export function LoginForm({
               <div className="flex flex-col items-center gap-2 text-center mb-6">
                 <div className="relative group">
                   <div className="absolute inset-0 bg-primary/20 blur-xl rounded-full group-hover:bg-primary/30 transition-all" />
-                  <div className="relative bg-white/5 border border-white/10 p-4 rounded-2xl mb-2">
+                  <div className="relative bg-secondary border border-border p-4 rounded-2xl mb-2">
                     <Image
                       src="https://res.cloudinary.com/dioe6nj4y/image/upload/v1770392888/leader_jhzssx.png"
                       height={32}
                       width={32}
-                      className="invert"
+                      className="dark:invert"
                       alt="Learn Hub"
                     />
                   </div>
                 </div>
-                <h1 className="text-3xl font-black text-white tracking-tighter">
+                <h1 className="text-3xl font-black text-foreground tracking-tighter uppercase">
                   Welcome to <span className="shimmer-gold">LearnHub</span>
                 </h1>
-                <p className="text-slate-500 text-sm font-medium">
+                <p className="text-muted-foreground text-sm font-medium">
                   Secure access to your academic portal
                 </p>
               </div>
@@ -101,26 +100,25 @@ export function LoginForm({
                   const isInvalid =
                     field.state.meta.isTouched && !field.state.meta.isValid;
                   return (
-                    <Field data-invalid={isInvalid} className="space-y-2">
-                      <FieldLabel className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    <div className="space-y-2">
+                      <FieldLabel className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
                         Email
                       </FieldLabel>
                       <Input
                         id="email"
                         type="email"
                         placeholder="name@student.com"
-                        className="bg-white/5 border-white/10 text-white h-12 rounded-xl focus-visible:ring-primary focus-visible:border-primary/50"
+                        className="bg-secondary border-border text-foreground h-12 rounded-xl focus-visible:ring-primary"
                         required
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
                       />
                       {isInvalid && (
-                        <FieldError
-                          className="text-red-400 text-xs mt-1"
-                          errors={field.state.meta.errors}
-                        />
+                        <p className="text-destructive text-xs mt-1 font-bold">
+                          {field?.state?.meta?.errors}
+                        </p>
                       )}
-                    </Field>
+                    </div>
                   );
                 }}
               </form.Field>
@@ -130,49 +128,43 @@ export function LoginForm({
                   const isInvalid =
                     field.state.meta.isTouched && !field.state.meta.isValid;
                   return (
-                    <Field data-invalid={isInvalid} className="space-y-2">
+                    <div className="space-y-2">
                       <div className="flex justify-between items-center">
-                        <FieldLabel className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                        <FieldLabel className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
                           Password
                         </FieldLabel>
-                        <Link
-                          href="#"
-                          className="text-[10px] text-primary hover:underline font-bold uppercase tracking-widest"
-                        >
-                          Forgot?
-                        </Link>
+                
                       </div>
                       <Input
                         id="password"
                         type="password"
-                        className="bg-white/5 border-white/10 text-white h-12 rounded-xl focus-visible:ring-primary focus-visible:border-primary/50"
+                        className="bg-secondary border-border text-foreground h-12 rounded-xl focus-visible:ring-primary"
                         value={field.state.value}
                         onChange={(e) => field.handleChange(e.target.value)}
                       />
                       {isInvalid && (
-                        <FieldError
-                          className="text-red-400 text-xs mt-1"
-                          errors={field.state.meta.errors}
-                        />
+                        <p className="text-destructive text-xs mt-1 font-bold">
+                          {field.state.meta.errors}
+                        </p>
                       )}
-                    </Field>
+                    </div>
                   );
                 }}
               </form.Field>
 
               <Button
                 type="submit"
-                className="w-full bg-primary hover:bg-primary/90 text-black font-black py-7 rounded-2xl transition-all shadow-lg shadow-primary/20 active:scale-[0.98]"
+                className="w-full bg-primary hover:bg-primary/90 text-primary-foreground font-black py-7 rounded-2xl transition-all shadow-lg shadow-primary/20 active:scale-[0.98] uppercase tracking-widest"
               >
                 Sign In
               </Button>
 
               <div className="relative py-2">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-white/5" />
+                  <span className="w-full border-t border-border" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-[#020617] px-2 text-slate-500 font-bold">
+                  <span className="bg-card px-2 text-muted-foreground font-bold tracking-widest">
                     Or continue with
                   </span>
                 </div>
@@ -182,7 +174,7 @@ export function LoginForm({
                 onClick={() => handleGoogleLogin()}
                 variant="outline"
                 type="button"
-                className="w-full border-white/10 bg-white/5 text-white hover:bg-white/10 h-12 rounded-xl transition-all font-bold"
+                className="w-full border-border bg-secondary text-foreground hover:bg-accent h-12 rounded-xl transition-all font-bold uppercase tracking-widest text-[10px]"
               >
                 <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                   <path
@@ -193,11 +185,11 @@ export function LoginForm({
                 Google Account
               </Button>
 
-              <p className="text-center text-sm text-slate-500 font-medium">
+              <p className="text-center text-sm text-muted-foreground font-medium">
                 New to the platform?{" "}
                 <Link
                   href="/register"
-                  className="text-primary font-bold hover:text-primary/80"
+                  className="text-primary font-bold hover:underline"
                 >
                   Create account
                 </Link>
@@ -205,17 +197,16 @@ export function LoginForm({
             </FieldGroup>
           </form>
 
-          {/* Right Side Glassmorphism Panel */}
-          <div className="bg-secondary relative hidden md:flex flex-col items-center justify-center p-12 overflow-hidden">
-            {/* Background Orbs */}
+          {/* Right Side Panel: bg-secondary adapts automatically */}
+          <div className="bg-secondary relative hidden md:flex flex-col items-center justify-center p-12 overflow-hidden border-l border-border">
             <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 blur-[100px] rounded-full" />
             <div className="absolute bottom-0 left-0 w-64 h-64 bg-primary/5 blur-[80px] rounded-full" />
 
             <div className="relative z-10 text-center space-y-6">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-primary text-[10px] font-black uppercase tracking-widest">
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-background border border-border text-primary text-[10px] font-black uppercase tracking-widest">
                 <Sparkles className="size-3" /> Future-Ready Learning
               </div>
-              <h2 className="text-4xl lg:text-5xl font-black text-white leading-[0.9] tracking-tighter italic">
+              <h2 className="text-4xl lg:text-5xl font-black text-foreground leading-[0.9] tracking-tighter italic uppercase">
                 Knowledge is <br /> the bridge to <br />
                 <span className="text-primary">greatness.</span>
               </h2>
@@ -225,8 +216,8 @@ export function LoginForm({
         </CardContent>
       </Card>
 
-      <p className="text-[10px] text-slate-600 text-center px-8 uppercase tracking-[0.3em] font-black">
-        Encrypted Academic Access
+      <p className="text-[10px] text-muted-foreground/60 text-center px-8 uppercase tracking-[0.3em] font-black">
+        Encrypted Academic Access System
       </p>
     </div>
   );

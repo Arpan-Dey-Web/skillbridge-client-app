@@ -8,7 +8,6 @@ import {
   Calendar,
   Loader2,
   Trash2,
-  CheckCircle2,
   Inbox,
   History,
   ExternalLink,
@@ -60,7 +59,6 @@ export default function TutorBookingRequests() {
     }
   };
 
-  // --- Filtering Logic (Tab Categorization) ---
   const groups = useMemo(() => {
     return {
       pending: bookings.filter((b) => b.status === "PENDING"),
@@ -73,7 +71,6 @@ export default function TutorBookingRequests() {
     };
   }, [bookings]);
 
-  // --- Approve Logic ---
   const handleApprove = async (bookingId: string) => {
     const link = meetLinks[bookingId];
     if (!link || !link.startsWith("https://meet")) {
@@ -95,7 +92,6 @@ export default function TutorBookingRequests() {
       const json = await res.json();
       if (json.success) {
         toast.success("Session Confirmed!");
-        // Update state locally for immediate UI feedback
         setBookings((prev) =>
           prev.map((b) =>
             b.id === bookingId
@@ -111,7 +107,6 @@ export default function TutorBookingRequests() {
     }
   };
 
-  // --- Reject/Delete Logic ---
   const handleReject = async (bookingId: string) => {
     setRejectLoading(bookingId);
     try {
@@ -133,46 +128,44 @@ export default function TutorBookingRequests() {
   if (loading)
     return (
       <div className="flex h-[400px] w-full items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-amber-500" />
+        <Loader2 className="size-8 animate-spin text-primary" />
       </div>
     );
 
   return (
-    <div className="space-y-8 ">
+    <div className="space-y-8 transition-colors duration-500">
       {/* Header Section */}
       <div className="flex flex-col gap-2">
-        <h2 className="text-3xl font-black text-white tracking-tight uppercase italic">
-          Tutor <span className="text-amber-500">Workspace.</span>
+        <h2 className="text-3xl font-black text-foreground tracking-tight uppercase italic">
+          Tutor <span className="shimmer-gold">Workspace.</span>
         </h2>
-        <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em]">
+        <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.3em]">
           Manage your schedule and student interactions
         </p>
       </div>
 
       <Tabs defaultValue="pending" className="w-full">
-        {/* Tab List Styling */}
-        <TabsList className="bg-white/5 border border-white/10 p- h-14 rounded-2xl mb-8 w-full md:w-auto grid grid-cols-3 md:inline-grid">
+        <TabsList className="bg-secondary border border-border h-14 rounded-2xl mb-8 w-full md:w-auto grid grid-cols-3 md:inline-grid">
           <TabsTrigger
             value="pending"
-            className="rounded-xl data-[state=active]:bg-amber-500 data-[state=active]:text-black font-black uppercase text-[10px] tracking-widest px-8 transition-all"
+            className="rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-black uppercase text-[10px] tracking-widest px-8 transition-all"
           >
             Pending ({groups.pending.length})
           </TabsTrigger>
           <TabsTrigger
             value="upcoming"
-            className="rounded-xl data-[state=active]:bg-amber-500 data-[state=active]:text-black font-black uppercase text-[10px] tracking-widest px-8 transition-all"
+            className="rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-black uppercase text-[10px] tracking-widest px-8 transition-all"
           >
             Upcoming ({groups.upcoming.length})
           </TabsTrigger>
           <TabsTrigger
             value="completed"
-            className="rounded-xl data-[state=active]:bg-amber-500 data-[state=active]:text-black font-black uppercase text-[10px] tracking-widest px-8 transition-all"
+            className="rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-black uppercase text-[10px] tracking-widest px-8 transition-all"
           >
             History
           </TabsTrigger>
         </TabsList>
 
-        {/* --- PENDING REQUESTS --- */}
         <TabsContent value="pending" className="outline-none">
           <AnimatePresence mode="popLayout">
             {groups.pending.length === 0 ? (
@@ -183,7 +176,7 @@ export default function TutorBookingRequests() {
                   <BookingRow key={booking.id} booking={booking}>
                     <div className="flex flex-col md:flex-row items-center gap-3 w-full lg:w-auto">
                       <div className="relative w-full md:w-64">
-                        <Video className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
+                        <Video className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
                         <Input
                           placeholder="Google Meet Link..."
                           value={meetLinks[booking.id] || ""}
@@ -193,14 +186,14 @@ export default function TutorBookingRequests() {
                               [booking.id]: e.target.value,
                             })
                           }
-                          className="pl-10 bg-white/5 border-white/10 text-white text-xs h-12 rounded-xl focus-visible:ring-amber-500/20 font-bold"
+                          className="pl-10 bg-background border-border text-foreground text-xs h-12 rounded-xl focus-visible:ring-primary/20 font-bold"
                         />
                       </div>
                       <div className="flex gap-2 w-full md:w-auto">
                         <Button
                           onClick={() => handleApprove(booking.id)}
                           disabled={!!actionLoading}
-                          className="flex-1 bg-amber-500 text-black hover:bg-white font-black h-12 rounded-xl transition-all"
+                          className="flex-1 bg-primary text-primary-foreground hover:bg-foreground hover:text-background font-black h-12 rounded-xl transition-all uppercase text-[10px] tracking-widest italic"
                         >
                           {actionLoading === booking.id ? (
                             <Loader2 className="animate-spin size-4" />
@@ -221,7 +214,6 @@ export default function TutorBookingRequests() {
           </AnimatePresence>
         </TabsContent>
 
-        {/* --- UPCOMING SESSIONS --- */}
         <TabsContent value="upcoming" className="outline-none">
           {groups.upcoming.length === 0 ? (
             <EmptyState message="No scheduled sessions found." />
@@ -231,7 +223,7 @@ export default function TutorBookingRequests() {
                 <BookingRow key={booking.id} booking={booking} type="approved">
                   <Button
                     asChild
-                    className="w-full md:w-auto bg-white/10 hover:bg-amber-500 hover:text-black text-white font-black h-12 rounded-xl border border-white/10 transition-all"
+                    className="w-full md:w-auto bg-secondary hover:bg-primary hover:text-primary-foreground text-foreground font-black h-12 rounded-xl border border-border transition-all uppercase text-[10px] tracking-widest italic"
                   >
                     <a href={booking.meetLink} target="_blank" rel="noreferrer">
                       <ExternalLink className="size-4 mr-2" />
@@ -244,7 +236,6 @@ export default function TutorBookingRequests() {
           )}
         </TabsContent>
 
-        {/* --- COMPLETED HISTORY --- */}
         <TabsContent value="completed" className="outline-none">
           {groups.completed.length === 0 ? (
             <EmptyState message="No past sessions recorded." />
@@ -252,7 +243,7 @@ export default function TutorBookingRequests() {
             <div className="grid gap-4 opacity-70">
               {groups.completed.map((booking) => (
                 <BookingRow key={booking.id} booking={booking} type="history">
-                  <div className="px-4 py-2 rounded-lg bg-green-500/10 border border-green-500/20 text-green-500 text-[10px] font-black uppercase tracking-widest">
+                  <div className="px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-500 text-[10px] font-black uppercase tracking-widest">
                     Completed
                   </div>
                 </BookingRow>
@@ -265,8 +256,6 @@ export default function TutorBookingRequests() {
   );
 }
 
-// --- Sub-Components to keep code clean ---
-
 function BookingRow({ booking, children, type = "pending" }: any) {
   return (
     <motion.div
@@ -275,17 +264,17 @@ function BookingRow({ booking, children, type = "pending" }: any) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, scale: 0.95 }}
     >
-      <SpotlightCard className="p-0 border-white/5 overflow-hidden group">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between p-6 bg-white/[0.02] gap-6">
+      <SpotlightCard className="p-0 border-border overflow-hidden bg-card shadow-sm group">
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between p-6 gap-6">
           <div className="flex items-start gap-5">
             <div
               className={cn(
                 "size-14 rounded-2xl flex items-center justify-center shrink-0 border transition-colors",
                 type === "pending"
-                  ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
+                  ? "bg-primary/10 border-primary/20 text-primary"
                   : type === "approved"
                     ? "bg-blue-500/10 border-blue-500/20 text-blue-500"
-                    : "bg-slate-500/10 border-slate-500/20 text-slate-500",
+                    : "bg-muted border-border text-muted-foreground",
               )}
             >
               {type === "history" ? (
@@ -295,15 +284,15 @@ function BookingRow({ booking, children, type = "pending" }: any) {
               )}
             </div>
             <div className="space-y-1">
-              <h4 className="text-white font-black text-xl leading-none italic uppercase tracking-tighter">
+              <h4 className="text-foreground font-black text-xl leading-none italic uppercase tracking-tighter">
                 {booking?.student?.name}
               </h4>
-              <div className="flex flex-wrap gap-4 text-slate-400 text-[10px] font-black uppercase tracking-widest">
-                <span className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-md">
-                  <Clock className="size-3 text-amber-500" />
+              <div className="flex flex-wrap gap-4 text-muted-foreground text-[10px] font-black uppercase tracking-widest">
+                <span className="flex items-center gap-1.5 bg-secondary px-2 py-1 rounded-md">
+                  <Clock className="size-3 text-primary" />
                   {format(new Date(booking.startTime), "MMM d, p")}
                 </span>
-                <span className="flex items-center gap-1.5 bg-white/5 px-2 py-1 rounded-md">
+                <span className="flex items-center gap-1.5 bg-secondary px-2 py-1 rounded-md">
                   <TimerIcon className="size-3" />
                   {Math.round(
                     (new Date(booking.endTime).getTime() -
@@ -335,7 +324,7 @@ function RejectAction({
         <Button
           variant="ghost"
           disabled={loading}
-          className="bg-red-500/5 hover:bg-red-500 hover:text-white text-red-500 size-12 p-0 rounded-xl border border-red-500/10 transition-all"
+          className="bg-destructive/5 hover:bg-destructive hover:text-destructive-foreground text-destructive size-12 p-0 rounded-xl border border-destructive/10 transition-all"
         >
           {loading ? (
             <Loader2 className="animate-spin size-4" />
@@ -344,23 +333,23 @@ function RejectAction({
           )}
         </Button>
       </AlertDialogTrigger>
-      <AlertDialogContent className="bg-slate-900 border-white/10 text-white rounded-[2.5rem]">
+      <AlertDialogContent className="bg-card border-border text-foreground rounded-[2.5rem]">
         <AlertDialogHeader>
-          <AlertDialogTitle className="text-xl font-black uppercase italic">
-            Reject <span className="text-red-500">Request?</span>
+          <AlertDialogTitle className="text-xl font-black uppercase italic tracking-tighter">
+            Reject <span className="text-destructive">Request?</span>
           </AlertDialogTitle>
-          <AlertDialogDescription className="text-slate-400">
-            Are you sure you want to remove this booking request? This cannot be
-            undone.
+          <AlertDialogDescription className="text-muted-foreground">
+            Are you sure you want to remove this booking request? This action
+            cannot be undone.
           </AlertDialogDescription>
         </AlertDialogHeader>
         <AlertDialogFooter>
-          <AlertDialogCancel className="bg-white/5 border-white/10 text-white rounded-xl">
+          <AlertDialogCancel className="bg-secondary border-border text-foreground rounded-xl font-black uppercase text-[10px] tracking-widest">
             Keep
           </AlertDialogCancel>
           <AlertDialogAction
             onClick={onConfirm}
-            className="bg-red-600 hover:bg-red-700 text-white font-bold rounded-xl"
+            className="bg-destructive hover:bg-destructive/90 text-destructive-foreground font-black rounded-xl uppercase text-[10px] tracking-widest"
           >
             Yes, Reject
           </AlertDialogAction>
@@ -375,10 +364,10 @@ function EmptyState({ message }: { message: string }) {
     <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
-      className="py-24 flex flex-col items-center justify-center border-2 border-dashed border-white/5 rounded-[3rem] bg-white/[0.01]"
+      className="py-24 flex flex-col items-center justify-center border-2 border-dashed border-border rounded-[3rem] bg-secondary/20"
     >
-      <Inbox className="size-12 text-slate-800 mb-4" />
-      <p className="text-slate-500 font-black italic uppercase tracking-[0.2em] text-[10px]">
+      <Inbox className="size-12 text-muted-foreground/30 mb-4" />
+      <p className="text-muted-foreground font-black italic uppercase tracking-[0.2em] text-[10px]">
         {message}
       </p>
     </motion.div>

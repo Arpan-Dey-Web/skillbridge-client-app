@@ -27,7 +27,8 @@ export const SpotlightCard = ({
       onMouseEnter={() => setOpacity(1)}
       onMouseLeave={() => setOpacity(0)}
       className={cn(
-        "relative overflow-hidden rounded-[2.5rem] border border-border bg-card p-1",
+        // Added shadow-sm for Light mode depth
+        "relative overflow-hidden rounded-[2.5rem] border border-border bg-card shadow-sm transition-shadow hover:shadow-md",
         className,
       )}
     >
@@ -35,10 +36,11 @@ export const SpotlightCard = ({
         className="pointer-events-none absolute -inset-px transition duration-300"
         style={{
           opacity,
-          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, rgba(245, 158, 11, 0.1), transparent 40%)`,
+          // Using a CSS variable for the gradient so it changes with the theme
+          background: `radial-gradient(600px circle at ${position.x}px ${position.y}px, var(--spotlight-color), transparent 40%)`,
         }}
       />
-      {children}
+      <div className="relative z-10">{children}</div>
     </div>
   );
 };

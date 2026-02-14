@@ -1,11 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import {
-  Search,
-  Filter,
   MoreHorizontal,
-  UserPlus,
-  ShieldCheck,
   UserX,
   Users,
   GraduationCap,
@@ -18,8 +14,7 @@ import {
 } from "lucide-react";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { toast } from "sonner"; // টোস্ট নোটিফিকেশনের জন্য
+import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,10 +29,9 @@ import Link from "next/link";
 
 export default function TotalUsers() {
   const [stats, setStats] = useState<any>(null);
-  const [users, setUsers] = useState<any[]>([]); // Initialize as empty array
+  const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  console.log(users);
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/users/stats`, {
       credentials: "include",
@@ -60,7 +54,6 @@ export default function TotalUsers() {
       .catch(() => setLoading(false));
   }, []);
 
-  // --- BAN/UNBAN লজিক ---
   const handleStatusUpdate = async (userId: string, currentStatus: string) => {
     const newStatus = currentStatus === "ACTIVE" ? "BANNED" : "ACTIVE";
     const loadingToast = toast.loading(
@@ -82,8 +75,6 @@ export default function TotalUsers() {
 
       if (json.success) {
         toast.success(json.message, { id: loadingToast });
-
-        // পেজ রিফ্রেশ ছাড়া স্টেট আপডেট (Optimistic Update)
         setUsers((prevUsers) =>
           prevUsers.map((user) =>
             user.id === userId ? { ...user, status: newStatus } : user,
@@ -98,25 +89,25 @@ export default function TotalUsers() {
   };
 
   return (
-    <div className="space-y-8">
-      {/* --- HEADER (Same as yours) --- */}
+    <div className="space-y-8 transition-colors duration-500">
+      {/* --- HEADER --- */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div>
-          <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
-            User <span className="text-amber-500">Directory</span>
+          <h1 className="text-4xl font-black text-foreground tracking-tighter uppercase italic leading-none">
+            User <span className="shimmer-gold">Directory</span>
           </h1>
-          <p className="text-slate-500 font-medium">
+          <p className="text-muted-foreground font-medium text-sm mt-2">
             Manage, verify, and monitor platform members.
           </p>
         </div>
       </div>
 
-      {/* --- STATS GRID (Same as yours) --- */}
+      {/* --- STATS GRID --- */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatMiniCard
           label="Total Members"
           value={stats?.total || 0}
-          icon={<Users className="size-4 text-amber-500" />}
+          icon={<Users className="size-4 text-primary" />}
           trend={`${stats?.growthPercentage || 0}%`}
         />
         <StatMiniCard
@@ -137,57 +128,35 @@ export default function TotalUsers() {
         />
       </div>
 
-      {/* --- SEARCH & FILTERS --- */}
-      {/* <div className="flex flex-wrap items-center gap-4 bg-white/[0.02] p-4 rounded-2xl border border-white/5">
-        <div className="relative flex-1 min-w-[300px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-500" />
-          <Input
-            placeholder="Search by name, email, or ID..."
-            className="pl-10 bg-[#020617] border-white/10 text-white rounded-xl h-11 focus-visible:ring-amber-500/20"
-          />
-        </div>
-        <select className="bg-[#020617] border-white/10 text-slate-400 text-[10px] font-black rounded-xl h-11 px-4 uppercase tracking-[0.1em] outline-none focus:border-amber-500 transition-colors cursor-pointer">
-          <option>All Roles</option>
-          <option>Students</option>
-          <option>Tutors</option>
-        </select>
-        <Button
-          variant="outline"
-          className="border-white/10 bg-white/5 text-white hover:bg-white/10 rounded-xl h-11"
-        >
-          <Filter className="size-4 mr-2 text-amber-500" /> Advanced
-        </Button>
-      </div> */}
-
       {/* --- USER TABLE --- */}
-      <SpotlightCard className="p-0 border-white/5 overflow-hidden bg-white/[0.01]">
+      <SpotlightCard className="p-0 border-border overflow-hidden bg-card shadow-sm">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-white/5 bg-white/[0.02]">
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-slate-500">
+              <tr className="border-b border-border bg-secondary/50">
+                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Member
                 </th>
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">
+                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">
                   Role
                 </th>
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-slate-500 text-center">
+                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-center">
                   Status
                 </th>
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-slate-500">
+                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground">
                   Joined Date
                 </th>
-                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-slate-500 text-right">
+                <th className="p-5 text-[10px] font-black uppercase tracking-widest text-muted-foreground text-right">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-white/5">
+            <tbody className="divide-y divide-border">
               {loading ? (
                 <tr>
                   <td
                     colSpan={5}
-                    className="p-20 text-center text-slate-500 font-bold animate-pulse italic"
+                    className="p-20 text-center text-muted-foreground font-bold animate-pulse italic uppercase text-[10px] tracking-[0.3em]"
                   >
                     Fetching records...
                   </td>
@@ -196,20 +165,19 @@ export default function TotalUsers() {
                 users.map((user) => (
                   <tr
                     key={user.id}
-                    className="group hover:bg-white/[0.02] transition-colors"
+                    className="group hover:bg-secondary/30 transition-colors"
                   >
-                    {/* User Info & Role (আপনার কোড অনুযায়ী) */}
                     <td className="p-5">
                       <div className="flex items-center gap-3">
-                        <div className="size-10 rounded-xl bg-gradient-to-br from-amber-500/20 to-transparent border border-white/5 flex items-center justify-center text-amber-500 font-black">
+                        <div className="size-10 rounded-xl bg-secondary flex items-center justify-center text-primary font-black border border-border">
                           {user.name.charAt(0)}
                         </div>
                         <div>
-                          <p className="text-sm font-bold text-white leading-none">
+                          <p className="text-sm font-bold text-foreground leading-none italic uppercase">
                             {user.name}
                           </p>
-                          <p className="text-[10px] text-slate-500 flex items-center gap-1 mt-1.5 uppercase font-medium">
-                            <Mail className="size-3 text-amber-500/50" />{" "}
+                          <p className="text-[10px] text-muted-foreground flex items-center gap-1 mt-1.5 uppercase font-black">
+                            <Mail className="size-3 text-primary/50" />{" "}
                             {user.email}
                           </p>
                         </div>
@@ -220,7 +188,7 @@ export default function TotalUsers() {
                         className={cn(
                           "px-3 py-1 rounded-lg text-[9px] font-black uppercase border",
                           user.role === "ADMIN"
-                            ? "bg-red-500/10 text-red-500 border-red-500/20"
+                            ? "bg-destructive/10 text-destructive border-destructive/20"
                             : "bg-blue-500/10 text-blue-500 border-blue-500/20",
                         )}
                       >
@@ -228,7 +196,6 @@ export default function TotalUsers() {
                       </span>
                     </td>
 
-                    {/* Status Column */}
                     <td className="p-5 text-center">
                       <div className="flex items-center justify-center gap-1.5">
                         <div
@@ -236,64 +203,62 @@ export default function TotalUsers() {
                             "size-1.5 rounded-full animate-pulse",
                             user.status === "ACTIVE"
                               ? "bg-emerald-500"
-                              : "bg-red-500",
+                              : "bg-destructive",
                           )}
                         />
-                        <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
+                        <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                           {user.status}
                         </span>
                       </div>
                     </td>
 
                     <td className="p-5">
-                      <p className="text-xs text-slate-400 font-medium flex items-center gap-2">
-                        <CalendarDays className="size-3.5 text-slate-600" />
+                      <p className="text-[10px] text-muted-foreground font-black uppercase tracking-tighter flex items-center gap-2">
+                        <CalendarDays className="size-3.5 text-muted-foreground/40" />
                         {format(new Date(user.createdAt), "MMM dd, yyyy")}
                       </p>
                     </td>
 
-                    {/* Actions Menu */}
                     <td className="p-5 text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
                             variant="ghost"
-                            className="size-8 p-0 hover:bg-white/5 text-slate-500"
+                            className="size-8 p-0 hover:bg-secondary text-muted-foreground"
                           >
                             <MoreHorizontal className="size-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                           align="end"
-                          className="bg-[#0f172a] border-white/10 text-white"
+                          className="bg-card border-border text-foreground rounded-2xl shadow-xl"
                         >
-                          <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-slate-500">
-                            Manage User
+                          <DropdownMenuLabel className="text-[10px] font-black uppercase tracking-widest text-muted-foreground p-3">
+                            Manage Member
                           </DropdownMenuLabel>
                           <DropdownMenuItem
                             asChild
-                            className="focus:bg-primary focus:text-background cursor-pointer"
+                            className="focus:bg-primary focus:text-primary-foreground cursor-pointer rounded-lg mx-1"
                           >
                             <Link
                               href={`/dashboard/admin/users/user/${user.id}`}
-                              className="flex w-full items-center"
+                              className="flex w-full items-center p-2"
                             >
                               <ExternalLink className="size-4 mr-2" />
-                              <span className="font-bold uppercase tracking-widest text-[10px]">
+                              <span className="font-black uppercase tracking-widest text-[9px]">
                                 View Profile
                               </span>
                             </Link>
                           </DropdownMenuItem>
-                          <DropdownMenuSeparator className="bg-white/5" />
-                          {/* Ban/Unban Dynamic Button */}
+                          <DropdownMenuSeparator className="bg-border mx-1" />
                           <DropdownMenuItem
                             onClick={() =>
                               handleStatusUpdate(user.id, user.status)
                             }
                             className={cn(
-                              "cursor-pointer font-bold",
+                              "cursor-pointer font-black uppercase tracking-widest text-[9px] rounded-lg mx-1 p-2",
                               user.status === "ACTIVE"
-                                ? "text-red-500 focus:bg-red-500 focus:text-white"
+                                ? "text-destructive focus:bg-destructive focus:text-destructive-foreground"
                                 : "text-emerald-500 focus:bg-emerald-500 focus:text-white",
                             )}
                           >
@@ -324,18 +289,18 @@ export default function TotalUsers() {
 
 function StatMiniCard({ label, value, icon, trend, isGrowth }: any) {
   return (
-    <div className="p-5 rounded-2xl bg-white/[0.02] border border-white/5 space-y-3">
+    <div className="p-5 rounded-2xl bg-card border border-border shadow-sm space-y-3">
       <div className="flex items-center justify-between">
-        <div className="size-8 rounded-lg bg-white/5 flex items-center justify-center">
+        <div className="size-8 rounded-lg bg-secondary flex items-center justify-center border border-border">
           {icon}
         </div>
         {trend && (
           <span
             className={cn(
-              "text-[10px] font-black px-2 py-0.5 rounded-full",
+              "text-[9px] font-black px-2 py-0.5 rounded-full border",
               isGrowth
-                ? "bg-emerald-500/10 text-emerald-500"
-                : "bg-amber-500/10 text-amber-500",
+                ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-500 border-emerald-500/20"
+                : "bg-primary/10 text-primary border-primary/20",
             )}
           >
             {trend}
@@ -343,10 +308,12 @@ function StatMiniCard({ label, value, icon, trend, isGrowth }: any) {
         )}
       </div>
       <div>
-        <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+        <p className="text-[9px] font-black text-muted-foreground uppercase tracking-widest">
           {label}
         </p>
-        <h4 className="text-2xl font-black text-white">{value}</h4>
+        <h4 className="text-2xl font-black text-foreground uppercase italic tracking-tighter">
+          {value}
+        </h4>
       </div>
     </div>
   );

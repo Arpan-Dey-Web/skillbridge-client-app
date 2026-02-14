@@ -3,14 +3,11 @@ import React, { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Clock,
-  Video,
-  MoreVertical,
   CalendarDays,
-  CheckCircle2,
-  XCircle,
-  Timer,
   Wallet,
   ArrowUpRight,
+  Settings2,
+  FileText,
 } from "lucide-react";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { Button } from "@/components/ui/button";
@@ -34,7 +31,6 @@ export default function Bookings() {
       .finally(() => setLoading(false));
   }, []);
 
-  // Filter logic: "Upcoming" means CONFIRMED/PENDING and time > now. "Past" means COMPLETED/CANCELLED or time < now.
   const filteredBookings = bookings.filter((b) => {
     const isPast =
       new Date(b.endTime) < new Date() ||
@@ -43,41 +39,42 @@ export default function Bookings() {
     return activeTab === "past" ? isPast : !isPast;
   });
 
-  // Calculate quick stats
   const totalRevenue = bookings.reduce((acc, curr) => acc + curr.totalPrice, 0);
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-8 transition-colors duration-500">
       {/* --- HEADER & ANALYTICS --- */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2">
-          <h1 className="text-4xl font-black text-white tracking-tighter uppercase italic">
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+        <div>
+          <h1 className="text-4xl font-black text-foreground tracking-tighter uppercase italic leading-none">
             Global <span className="shimmer-gold">Operations</span>
           </h1>
-          <p className="text-slate-500 font-medium mt-2">
-            Managing <span className="text-white">{bookings.length}</span>{" "}
-            recorded sessions across the ecosystem.
+          <p className="text-muted-foreground font-medium text-sm mt-3">
+            System Monitoring:{" "}
+            <span className="text-foreground font-black">
+              {bookings.length}
+            </span>{" "}
+            Active Lifecycle Sessions
           </p>
         </div>
 
-        {/* Quick Revenue Stat Card */}
-        <div className="bg-white/[0.02] border border-white/5 p-4 rounded-2xl flex items-center justify-between">
-          <div>
-            <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
-              Total Volume
-            </p>
-            <h3 className="text-2xl font-black shimmer-gold">
-              ${totalRevenue}
-            </h3>
-          </div>
-          <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center">
+        <div className="bg-card border border-border p-4 rounded-2xl flex items-center gap-6 shadow-sm min-w-[240px]">
+          <div className="size-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/10">
             <Wallet className="size-5 text-primary" />
+          </div>
+          <div>
+            <p className="text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
+              Platform Volume
+            </p>
+            <h3 className="text-2xl font-black text-foreground italic tracking-tighter">
+              ${totalRevenue.toLocaleString()}
+            </h3>
           </div>
         </div>
       </div>
 
       {/* --- TABS --- */}
-      <div className="flex gap-8 border-b border-white/5">
+      <div className="flex gap-8 border-b border-border">
         {(["upcoming", "past"] as const).map((tab) => (
           <button
             key={tab}
@@ -86,14 +83,14 @@ export default function Bookings() {
               "pb-4 text-[10px] font-black uppercase tracking-[0.2em] transition-all relative",
               activeTab === tab
                 ? "text-primary"
-                : "text-slate-500 hover:text-slate-300",
+                : "text-muted-foreground hover:text-foreground",
             )}
           >
             {tab} Sessions
             {activeTab === tab && (
               <motion.div
                 layoutId="activeTab"
-                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary shadow-[0_0_10px_rgba(245,158,11,0.5)]"
+                className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary"
               />
             )}
           </button>
@@ -103,18 +100,18 @@ export default function Bookings() {
       {/* --- SESSIONS LIST --- */}
       <div className="space-y-4">
         {loading ? (
-          <div className="text-center py-20 bg-white/[0.01] rounded-[2rem] border border-dashed border-white/5">
-            <div className="shimmer-gold font-black italic animate-pulse">
-              FETCHING_ALL_RECORDS...
+          <div className="h-64 flex flex-col items-center justify-center bg-card/50 rounded-[2rem] border border-dashed border-border">
+            <div className="shimmer-gold font-black italic animate-pulse uppercase tracking-widest text-xs">
+              Synchronizing_Global_Logs...
             </div>
           </div>
         ) : filteredBookings.length > 0 ? (
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: 10 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
               className="space-y-4"
             >
               {filteredBookings.map((booking) => (
@@ -123,10 +120,10 @@ export default function Bookings() {
             </motion.div>
           </AnimatePresence>
         ) : (
-          <div className="flex flex-col items-center justify-center py-24 border-2 border-dashed border-white/5 rounded-[3rem] bg-white/[0.01]">
-            <CalendarDays className="size-16 text-white/5 mb-4 animate-float" />
-            <p className="text-slate-600 font-black uppercase tracking-widest text-[10px]">
-              No {activeTab} activity logged in the system.
+          <div className="flex flex-col items-center justify-center py-24 border-2 border-dashed border-border rounded-[3rem] bg-secondary/30">
+            <CalendarDays className="size-12 text-muted-foreground/20 mb-4" />
+            <p className="text-muted-foreground font-black uppercase tracking-[0.3em] text-[10px]">
+              Null Record: No {activeTab} Activity
             </p>
           </div>
         )}
@@ -141,15 +138,15 @@ function BookingCard({ booking }: { booking: any }) {
   const day = dateObj.getDate();
 
   return (
-    <SpotlightCard className="p-0 border-white/5 group hover:border-primary/20 transition-all duration-500">
+    <SpotlightCard className="p-0 border-border bg-card shadow-sm group hover:border-primary/40 transition-all duration-500 rounded-3xl overflow-hidden">
       <div className="p-5 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="flex items-center gap-6">
-          {/* Date Badge */}
-          <div className="flex flex-col items-center justify-center size-16 rounded-2xl bg-white/[0.03] border border-white/5 group-hover:border-primary/30 transition-colors">
+          {/* Adaptive Date Badge */}
+          <div className="flex flex-col items-center justify-center size-16 rounded-2xl bg-secondary border border-border group-hover:bg-primary/5 transition-colors">
             <span className="text-[9px] font-black text-primary uppercase">
               {month}
             </span>
-            <span className="text-2xl font-black text-white leading-none">
+            <span className="text-2xl font-black text-foreground leading-none italic">
               {day}
             </span>
           </div>
@@ -160,28 +157,27 @@ function BookingCard({ booking }: { booking: any }) {
                 className={cn(
                   "text-[8px] font-black uppercase tracking-widest px-2 py-0.5 rounded-lg border",
                   booking.status === "COMPLETED"
-                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-500"
-                    : booking.status === "CONFIRMED"
-                      ? "bg-blue-500/10 border-blue-500/20 text-blue-500"
-                      : "bg-amber-500/10 border-amber-500/20 text-amber-500",
+                    ? "bg-emerald-500/10 border-emerald-500/20 text-emerald-600 dark:text-emerald-500"
+                    : "bg-primary/10 border-primary/20 text-primary",
                 )}
               >
                 {booking.status}
               </span>
-              <span className="text-slate-500 text-[9px] font-bold uppercase tracking-widest bg-white/5 px-2 py-0.5 rounded-lg">
-                ID: {booking.id.slice(0, 8)}
+              <span className="text-muted-foreground text-[8px] font-black uppercase tracking-widest bg-secondary px-2 py-0.5 rounded-lg border border-border">
+                ID_{booking.id.slice(0, 8)}
               </span>
             </div>
 
-            <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors flex items-center gap-2">
+            <h3 className="text-lg font-black text-foreground tracking-tight flex items-center gap-2 uppercase italic leading-none">
               {booking.studentName}
-              <ArrowUpRight className="size-3 text-slate-600" />
-              <span className="text-slate-400 font-medium">
-                {booking.tutorName}
+              <ArrowUpRight className="size-3 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+              <span className="text-muted-foreground font-medium lowercase">
+                with
               </span>
+              <span className="text-primary/80">{booking.tutorName}</span>
             </h3>
 
-            <div className="flex items-center gap-4 text-slate-500 text-[10px] font-black uppercase tracking-widest mt-2">
+            <div className="flex items-center gap-4 text-muted-foreground text-[9px] font-black uppercase tracking-[0.1em] mt-2">
               <span className="flex items-center gap-1.5">
                 <Clock className="size-3 text-primary" /> {booking.timeSlot}
               </span>
@@ -193,15 +189,15 @@ function BookingCard({ booking }: { booking: any }) {
           </div>
         </div>
 
-        <div className="flex items-center gap-3 md:justify-end border-t lg:border-t-0 border-white/5 pt-4 lg:pt-0">
+        <div className="flex items-center gap-3 md:justify-end border-t lg:border-t-0 border-border pt-4 lg:pt-0">
           <Button
             variant="ghost"
-            className="h-10 rounded-xl hover:bg-white/5 text-slate-400 font-bold text-[10px] uppercase tracking-widest"
+            className="h-10 px-5 rounded-xl text-muted-foreground hover:text-foreground font-black text-[9px] uppercase tracking-widest gap-2"
           >
-            Session Logs
+            <FileText className="size-3.5" /> Session Logs
           </Button>
-          <Button className="h-10 rounded-xl bg-white/5 border border-white/10 text-white hover:bg-primary hover:text-black font-black text-[10px] uppercase tracking-widest transition-all">
-            Manage
+          <Button className="h-10 px-6 rounded-xl bg-secondary border border-border text-foreground hover:bg-foreground hover:text-background font-black text-[9px] uppercase tracking-widest transition-all gap-2">
+            <Settings2 className="size-3.5" /> Manage
           </Button>
         </div>
       </div>

@@ -35,21 +35,27 @@ const Navbar = ({ className }: { className?: string }) => {
   // Prevent hydration mismatch
   useEffect(() => setMounted(true), []);
 
-  const menu = useMemo(() => {
-    const items = [
-      { title: "Home", url: "/" },
-      { title: "Tutors", url: "/tutors" },
-      { title: "About", url: "/about" },
-    ];
+const menu = useMemo(() => {
+  const items = [
+    { title: "Home", url: "/" },
+    { title: "Tutors", url: "/tutors" },
+    { title: "About", url: "/about" },
+  ];
 
-    if (session?.user) {
-      let dashboardPath = "/dashboard";
-      if (session.user.role === Roles.admin) dashboardPath = "/admin";
-      if (session.user.role === Roles.tutor) dashboardPath = "/tutor/dashboard";
-      items.push({ title: "Dashboard", url: dashboardPath });
+  if (session?.user) {
+    let dashboardPath = "/dashboard"; // Default for students
+
+    // Logic to match your Routes.ts definitions
+    if (session.user.role === Roles.admin) {
+      dashboardPath = "/dashboard/admin";
+    } else if (session.user.role === Roles.tutor) {
+      dashboardPath = "/dashboard/tutor"; 
     }
-    return items;
-  }, [session]);
+
+    items.push({ title: "Dashboard", url: dashboardPath });
+  }
+  return items;
+}, [session]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);

@@ -19,7 +19,6 @@ import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { authClient } from "@/lib/auth-client";
 import { cn } from "@/lib/utils";
 
-// কনস্ট্যান্টস
 const SHIFT_CONFIG = [
   {
     id: "morning",
@@ -27,7 +26,7 @@ const SHIFT_CONFIG = [
     start: "11:00 AM",
     end: "01:00 PM",
     icon: Sunrise,
-    color: "text-amber-400",
+    color: "text-amber-500", // Fixed for better contrast in light mode
   },
   {
     id: "afternoon",
@@ -35,7 +34,7 @@ const SHIFT_CONFIG = [
     start: "04:00 PM",
     end: "06:00 PM",
     icon: Sun,
-    color: "text-orange-400",
+    color: "text-orange-500",
   },
   {
     id: "night",
@@ -43,7 +42,7 @@ const SHIFT_CONFIG = [
     start: "09:00 PM",
     end: "11:00 PM",
     icon: Moon,
-    color: "text-indigo-400",
+    color: "text-indigo-500",
   },
 ];
 
@@ -62,21 +61,18 @@ export default function AvailabilityPage() {
   const { data: session } = authClient.useSession();
   const [schedule, setSchedule] = useState<{ [key: number]: string[] }>({});
 
-  // ১. ডাটা ফেচ করা (GET Availability)
   const { data: serverResponse, isLoading: isFetching } = useQuery({
     queryKey: ["tutor-availability", session?.user?.id],
     queryFn: async () => {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_APP_URL}/api/tutor/availability/${session?.user?.id}`,
       );
-      // যদি নতুন টিউটর হয় বা ডাটা না থাকে (404/500), তবে খালি অ্যারে রিটার্ন করবে
       if (!res.ok) return { success: true, data: [] };
       return res.json();
     },
     enabled: !!session?.user?.id,
   });
 
-  // ২. ডাটাবেস ডাটাকে UI স্টেটে কনভার্ট করা (নিখুঁত রূপান্তর লজিক)
   useEffect(() => {
     if (serverResponse?.success && Array.isArray(serverResponse.data)) {
       const transformed: { [key: number]: string[] } = {};
@@ -94,7 +90,6 @@ export default function AvailabilityPage() {
     }
   }, [serverResponse]);
 
-  // ৩. ডাটা সেভ করা (PUT Mutation)
   const mutation = useMutation({
     mutationFn: async (newSchedule: any) => {
       const response = await fetch(
@@ -131,20 +126,20 @@ export default function AvailabilityPage() {
   if (isFetching) {
     return (
       <div className="flex h-[400px] w-full items-center justify-center">
-        <Loader2 className="size-10 animate-spin text-amber-500/50" />
+        <Loader2 className="size-10 animate-spin text-primary/50" />
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full space-y-6">
+    <div className="w-full space-y-6">
       {/* --- HEADER --- */}
-      <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white/[0.02] border border-white/5 p-6 rounded-2xl backdrop-blur-md">
+      <div className="w-full flex flex-col md:flex-row md:items-center justify-between gap-6 bg-card border border-border p-8 rounded-3xl shadow-sm transition-colors duration-500">
         <div>
-          <h1 className="text-3xl font-black text-white tracking-tighter uppercase italic">
-            Teaching <span className="text-amber-500">Studio</span>
+          <h1 className="text-3xl font-black text-foreground tracking-tighter uppercase italic">
+            Teaching <span className="text-primary">Studio</span>
           </h1>
-          <p className="text-foreground/50 text-sm font-medium italic">
+          <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.2em] mt-1">
             Manage your daily shifts and global availability.
           </p>
         </div>
@@ -152,7 +147,7 @@ export default function AvailabilityPage() {
         <Button
           onClick={() => mutation.mutate(schedule)}
           disabled={mutation.isPending}
-          className="px-8 h-12 bg-amber-500 hover:bg-white text-black font-black rounded-xl shadow-2xl shadow-amber-500/20 transition-all active:scale-95"
+          className="px-10 h-14 bg-primary hover:bg-foreground hover:text-background text-primary-foreground font-black rounded-2xl shadow-xl shadow-primary/20 transition-all active:scale-95 uppercase tracking-widest text-xs italic"
         >
           {mutation.isPending ? (
             <Loader2 className="mr-2 size-4 animate-spin" />
@@ -163,24 +158,24 @@ export default function AvailabilityPage() {
         </Button>
       </div>
 
-      {/* --- EMPTY STATE INFO FOR NEW TUTORS --- */}
+      {/* --- INFO ALERT --- */}
       {Object.keys(schedule).length === 0 && (
         <motion.div
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="p-4 bg-amber-500/5 border border-amber-500/20 rounded-xl flex items-center gap-3"
+          className="p-5 bg-primary/10 border border-primary/20 rounded-2xl flex items-center gap-3"
         >
-          <Info className="size-4 text-amber-500" />
-          <p className="text-xs text-amber-200/70 font-medium uppercase tracking-wider">
-            No shifts selected. Click on the time slots below to set your
-            availability.
+          <Info className="size-4 text-primary" />
+          <p className="text-[10px] text-primary font-black uppercase tracking-wider">
+            No shifts selected. Click on the time slots below to register your
+            presence.
           </p>
         </motion.div>
       )}
 
       {/* --- MATRIX GRID --- */}
-      <SpotlightCard className="p-0 border-white/5 overflow-hidden bg-white/[0.01] rounded-[2rem]">
-        <div className="flex flex-col divide-y divide-white/5">
+      <SpotlightCard className="p-0 border-border overflow-hidden bg-card rounded-[2.5rem] shadow-sm">
+        <div className="flex flex-col divide-y divide-border">
           {DAYS.map((day, i) => (
             <motion.div
               key={day.value}
@@ -188,10 +183,10 @@ export default function AvailabilityPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: i * 0.03 }}
               className={cn(
-                "p-5 lg:p-7 flex flex-col xl:flex-row xl:items-center justify-between gap-8 transition-all duration-300",
+                "p-6 lg:p-8 flex flex-col xl:flex-row xl:items-center justify-between gap-8 transition-all duration-300",
                 (schedule[day.value]?.length || 0) > 0
-                  ? "bg-amber-500/[0.02]"
-                  : "hover:bg-white/[0.01]",
+                  ? "bg-primary/[0.03]"
+                  : "hover:bg-muted/50",
               )}
             >
               <div className="flex items-center gap-5 min-w-[200px]">
@@ -199,11 +194,11 @@ export default function AvailabilityPage() {
                   className={cn(
                     "size-3 rounded-full transition-all duration-500",
                     (schedule[day.value]?.length || 0) > 0
-                      ? "bg-amber-500 shadow-[0_0_12px_rgba(245,158,11,0.6)] scale-125"
-                      : "bg-slate-800",
+                      ? "bg-primary shadow-[0_0_15px_oklch(0.78_0.18_75_/_0.5)] scale-125"
+                      : "bg-muted border border-border",
                   )}
                 />
-                <h3 className="text-base font-black uppercase tracking-widest text-slate-200">
+                <h3 className="text-base font-black uppercase tracking-tighter text-foreground italic">
                   {day.label}
                 </h3>
               </div>
@@ -216,40 +211,40 @@ export default function AvailabilityPage() {
                       key={shift.id}
                       onClick={() => toggleShift(day.value, shift.id)}
                       className={cn(
-                        "relative flex items-center gap-4 p-4 rounded-2xl border-2 transition-all duration-300",
+                        "relative flex items-center gap-4 p-5 rounded-2xl border-2 transition-all duration-300",
                         isActive
-                          ? "bg-white/5 border-amber-500/50 shadow-[0_10px_30px_-15px_rgba(245,158,11,0.3)]"
-                          : "bg-white/[0.02] border-white/5 opacity-40 hover:opacity-100",
+                          ? "bg-background border-primary shadow-lg shadow-primary/10"
+                          : "bg-muted/30 border-border opacity-50 hover:opacity-100 hover:border-muted-foreground/30",
                       )}
                     >
                       <div
                         className={cn(
-                          "p-2.5 rounded-xl",
-                          isActive ? "bg-amber-500/20" : "bg-white/5",
+                          "p-3 rounded-xl transition-colors",
+                          isActive ? "bg-primary/10" : "bg-muted",
                         )}
                       >
                         <shift.icon
                           className={cn(
                             "size-5",
-                            isActive ? shift.color : "text-slate-600",
+                            isActive ? shift.color : "text-muted-foreground",
                           )}
                         />
                       </div>
                       <div className="text-left flex-1">
                         <p
                           className={cn(
-                            "text-[10px] font-black uppercase tracking-widest",
-                            isActive ? "text-amber-500" : "text-slate-500",
+                            "text-[9px] font-black uppercase tracking-[0.2em]",
+                            isActive ? "text-primary" : "text-muted-foreground",
                           )}
                         >
                           {shift.label}
                         </p>
-                        <p className="text-sm font-mono font-bold text-white leading-none mt-1">
+                        <p className="text-sm font-mono font-bold text-foreground leading-none mt-1">
                           {shift.start} — {shift.end}
                         </p>
                       </div>
                       {isActive && (
-                        <CheckCircle2 className="size-5 text-amber-500 absolute right-4 top-1/2 -translate-y-1/2 animate-in zoom-in" />
+                        <CheckCircle2 className="size-4 text-primary absolute right-4 top-4 animate-in zoom-in" />
                       )}
                     </button>
                   );
@@ -261,11 +256,11 @@ export default function AvailabilityPage() {
       </SpotlightCard>
 
       {/* --- FOOTER --- */}
-      <div className="flex items-center justify-center gap-3 p-5 bg-white/[0.02] border border-dashed border-white/10 rounded-2xl">
-        <Info className="size-4 text-slate-500" />
-        <p className="text-[11px] text-slate-500 font-medium tracking-wide uppercase">
-          Settings are automatically synced. Students will book sessions based
-          on these slots.
+      <div className="flex items-center justify-center gap-3 p-6 bg-muted/20 border border-dashed border-border rounded-3xl">
+        <Info className="size-4 text-muted-foreground" />
+        <p className="text-[10px] text-muted-foreground font-black uppercase tracking-[0.15em]">
+          Global synchronization active. These slots define your marketplace
+          visibility.
         </p>
       </div>
     </div>

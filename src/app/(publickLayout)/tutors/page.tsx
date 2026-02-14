@@ -22,30 +22,78 @@ import {
 import TutorCard from "@/components/ui/Tutorcard";
 import { cn } from "@/lib/utils";
 
-// --- Fetch Functions (Logic preserved) ---
-const fetchCategories = async () => {
+export interface CategoryCount {
+  tutors: number;
+}
+
+export interface Category {
+  id: string;
+  name: string;
+  _count: CategoryCount;
+}
+
+
+export interface CategoriesResponse {
+  data: Category[];
+}
+
+export interface Tutor {
+  id: string;
+  bio: string;
+  hourlyRate: number;
+  averageRating: number;
+  userId: string;
+  categoryId: string;
+  user: {
+    name: string;
+    image: string;
+  };
+  category: {
+    id: string;
+    name: string;
+  };
+}
+
+
+export interface TutorsResponse {
+  success: boolean;
+  data: Tutor[];
+  pagination?: {
+    totalItems: number;
+    totalPages: number;
+    currentPage: number;
+  };
+  totalPages?: number;
+}
+
+const fetchCategories = async (): Promise<Category[]> => {
   const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories`);
   if (!res.ok) throw new Error("Failed to load categories");
-  const data = await res.json();
-  return data.data;
+  const json = await res.json();
+  return json.data;
 };
 
-const fetchTutorsData = async ({ queryKey }: any) => {
+const fetchTutorsData = async ({ queryKey }: any): Promise<TutorsResponse> => {
   const [_key, { page, search, selectedCategory, maxPrice }] = queryKey;
+  
   let url = `${process.env.NEXT_PUBLIC_APP_URL}/api/tutors/all`;
   const params = new URLSearchParams({
     page: page.toString(),
     limit: "10",
-    search: search,
-    maxPrice: maxPrice,
+    search: search || "",
+    maxPrice: maxPrice || "",
   });
+
   if (selectedCategory !== "all") {
+    // Note: If this endpoint returns a different structure, adjust accordingly
     url = `${process.env.NEXT_PUBLIC_APP_URL}/api/categories/${selectedCategory}/tutors`;
   }
+
   const res = await fetch(`${url}?${params.toString()}`);
   if (!res.ok) throw new Error("Failed to fetch tutors");
   return res.json();
 };
+
 
 export default function TutorsPage() {
   const [search, setSearch] = useState("");
@@ -53,17 +101,17 @@ export default function TutorsPage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [page, setPage] = useState(1);
 
-  const { data: categories } = useQuery({
+  const { data: categories } = useQuery<Category[]>({
     queryKey: ["categories"],
     queryFn: fetchCategories,
   });
 
-  const { data: tutorResponse, isLoading: loading } = useQuery({
+
+  const { data: tutorResponse, isLoading: loading } = useQuery<TutorsResponse>({
     queryKey: ["tutors", { page, search, selectedCategory, maxPrice }],
     queryFn: fetchTutorsData,
     placeholderData: (previousData) => previousData,
   });
-
   const tutors = tutorResponse?.data || [];
   const totalPages =
     tutorResponse?.pagination?.totalPages || tutorResponse?.totalPages || 1;
@@ -118,7 +166,7 @@ export default function TutorsPage() {
                       >
                         All Categories
                       </SelectItem>
-                      {categories?.map((cat: any) => (
+                      {categories?.map((cat) => (
                         <SelectItem
                           key={cat.id}
                           value={cat.name}
@@ -176,7 +224,7 @@ export default function TutorsPage() {
             ) : (
               <div className="space-y-12">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                  {tutors?.map((tutor: any) => (
+                  {tutors?.map((tutor) => (
                     <TutorCard key={tutor.id} tutor={tutor} />
                   ))}
                 </div>

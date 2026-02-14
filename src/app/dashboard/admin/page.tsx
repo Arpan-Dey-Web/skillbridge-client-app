@@ -1,10 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion } from "framer-motion";
 import {
   Users,
-  ShieldCheck,
-  TrendingUp,
   Activity,
   Loader2,
   CalendarCheck,
@@ -23,12 +21,24 @@ import Link from "next/link";
 
 export default function AdminDashboard() {
   const { data: session, isPending } = authClient.useSession();
+
+  // Define the type without referencing the live 'session' variable
+  // This avoids the 'possibly null' error during build
+  type ExtendedUser = {
+    id: string;
+    email: string;
+    name: string;
+    role?: string;
+    image?: string | null;
+  };
+
+  const user = session?.user as ExtendedUser | undefined;
+
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (session?.user?.role === "ADMIN") {
-    
+    if (user?.role === "ADMIN") {
       fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/admin/dashboard-summary`, {
         credentials: "include",
       })
@@ -36,20 +46,21 @@ export default function AdminDashboard() {
         .then((json) => {
           if (json.success) setData(json.data);
         })
-        .catch((err) => console.error("Error:", err))
+        .catch((err) => console.error("Dashboard Fetch Error:", err))
         .finally(() => setLoading(false));
     }
-  }, [session]);
+  }, [user]);
 
+  // Handle Loading State
   if (isPending) return <LoaderScreen />;
-  if (session?.user?.role !== "ADMIN") {
-    redirect(
-      session?.user?.role === "TUTOR" ? "/dashboard/tutor" : "/dashboard",
-    );
+
+  // Auth Guard: If no user or unauthorized role, redirect
+  if (!user || user.role !== "ADMIN") {
+    const destination =
+      user?.role === "TUTOR" ? "/dashboard/tutor" : "/dashboard";
+    redirect(destination);
     return null;
   }
-
-  // --- DASHBOARD CONFIG ---
   const statsConfig = [
     {
       label: "Platform Users",
@@ -82,19 +93,19 @@ export default function AdminDashboard() {
   ];
 
   return (
-    <div className="space-y-10 py-6">
+    <div className="space-y-10 transition-colors duration-500">
       {/* --- HEADER --- */}
       <header className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
-          <h1 className="text-5xl font-black text-white tracking-tighter uppercase italic leading-none">
+          <h1 className="text-5xl font-black text-foreground tracking-tighter uppercase italic leading-none">
             System <span className="shimmer-gold">OS</span>
           </h1>
-          <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.3em] mt-3">
-            Admin: {session.user.name} | Deployment: Production
+          <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.3em] mt-3">
+            Admin: {user.name} | Deployment: Production
           </p>
         </div>
         <div className="flex gap-3">
-          <Button className="bg-white/5 border border-white/10 text-white font-bold rounded-xl h-12 px-6 hover:bg-white/10 transition-all">
+          <Button className="bg-secondary border border-border text-foreground font-black uppercase text-[10px] tracking-widest rounded-xl h-12 px-8 hover:bg-foreground hover:text-background transition-all italic">
             Audit Logs
           </Button>
         </div>
@@ -109,22 +120,22 @@ export default function AdminDashboard() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: i * 0.1 }}
           >
-            <Link href={stat.link ? stat.link : ""}>
-              <SpotlightCard className="p-6 border-white/5 bg-white/[0.01] hover:border-primary/20 group transition-all cursor-pointer">
+            <Link href={stat.link || "#"}>
+              <SpotlightCard className="p-6 border-border bg-card hover:border-primary/40 group transition-all cursor-pointer shadow-sm">
                 <div className="flex justify-between items-start mb-6">
-                  <div className="p-3 rounded-2xl bg-white/5 border border-white/5 group-hover:border-primary/20 transition-colors">
+                  <div className="p-3 rounded-2xl bg-secondary border border-border group-hover:border-primary/20 transition-colors">
                     {stat.icon}
                   </div>
-                  <ArrowUpRight className="size-4 text-slate-700 group-hover:text-primary transition-colors" />
+                  <ArrowUpRight className="size-4 text-muted-foreground/30 group-hover:text-primary transition-colors" />
                 </div>
-                <h3 className="text-4xl font-black text-white tracking-tighter mb-1">
+                <h3 className="text-4xl font-black text-foreground tracking-tighter mb-1 uppercase italic">
                   {loading ? "..." : stat.value}
                 </h3>
                 <div className="flex items-center justify-between">
-                  <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest">
+                  <p className="text-[10px] font-black text-muted-foreground uppercase tracking-widest">
                     {stat.label}
                   </p>
-                  <span className="text-[9px] font-bold text-slate-600 uppercase tracking-tighter">
+                  <span className="text-[9px] font-bold text-muted-foreground/60 uppercase tracking-tighter">
                     {stat.sub}
                   </span>
                 </div>
@@ -135,15 +146,15 @@ export default function AdminDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* --- RECENT ACTIVITY (NEW) --- */}
+        {/* --- RECENT ACTIVITY --- */}
         <div className="lg:col-span-2 space-y-6">
           <div className="flex items-center justify-between">
-            <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">
+            <h2 className="text-xl font-black text-foreground uppercase italic tracking-tighter">
               Recent <span className="text-primary">Sessions</span>
             </h2>
             <Link
               href="/dashboard/admin/bookings"
-              className="text-[10px] font-black text-slate-500 hover:text-white uppercase tracking-widest transition-colors"
+              className="text-[10px] font-black text-muted-foreground hover:text-primary uppercase tracking-widest transition-colors"
             >
               Monitor Flow
             </Link>
@@ -154,25 +165,28 @@ export default function AdminDashboard() {
               ? [1, 2, 3].map((i) => (
                   <div
                     key={i}
-                    className="h-20 w-full bg-white/5 animate-pulse rounded-2xl"
+                    className="h-20 w-full bg-secondary animate-pulse rounded-2xl"
                   />
                 ))
               : data?.recentBookings?.map((booking: any) => (
                   <SpotlightCard
                     key={booking.id}
-                    className="p-0 border-white/5 overflow-hidden group"
+                    className="p-0 border-border overflow-hidden group"
                   >
-                    <div className="flex items-center justify-between p-5 bg-white/[0.02] group-hover:bg-white/[0.04] transition-colors">
+                    <div className="flex items-center justify-between p-5 bg-card group-hover:bg-secondary/50 transition-colors">
                       <div className="flex items-center gap-4">
-                        <div className="size-10 rounded-xl bg-white/5 flex items-center justify-center text-primary font-black">
+                        <div className="size-10 rounded-xl bg-secondary flex items-center justify-center text-primary font-black border border-border">
                           <Clock className="size-5" />
                         </div>
                         <div>
-                          <h4 className="font-bold text-white text-sm">
-                            {booking.student.name} booked{" "}
+                          <h4 className="font-bold text-foreground text-sm uppercase italic tracking-tight">
+                            {booking.student.name}{" "}
+                            <span className="text-muted-foreground font-medium lowercase">
+                              booked
+                            </span>{" "}
                             {booking.tutor.user.name}
                           </h4>
-                          <p className="text-[9px] text-slate-500 font-black uppercase tracking-widest mt-0.5">
+                          <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest mt-0.5">
                             Status:{" "}
                             <span
                               className={cn(
@@ -183,23 +197,26 @@ export default function AdminDashboard() {
                             >
                               {booking.status}
                             </span>{" "}
-                            • ${booking.totalPrice}
+                            •{" "}
+                            <span className="text-foreground">
+                              ${booking.totalPrice}
+                            </span>
                           </p>
                         </div>
                       </div>
-                      <ArrowRight className="size-4 text-slate-700 group-hover:text-white group-hover:translate-x-1 transition-all" />
+                      <ArrowRight className="size-4 text-muted-foreground/30 group-hover:text-primary group-hover:translate-x-1 transition-all" />
                     </div>
                   </SpotlightCard>
                 ))}
           </div>
         </div>
 
-        {/* --- SYSTEM HEALTH & MONITORING --- */}
+        {/* --- SYSTEM HEALTH --- */}
         <div className="space-y-6">
-          <h2 className="text-xl font-black text-white uppercase italic tracking-tighter">
+          <h2 className="text-xl font-black text-foreground uppercase italic tracking-tighter">
             System <span className="text-primary">Health</span>
           </h2>
-          <SpotlightCard className="p-8 border-white/5 bg-gradient-to-br from-white/[0.02] to-transparent rounded-[2.5rem]">
+          <SpotlightCard className="p-8 border-border bg-card rounded-[2.5rem] shadow-sm">
             <div className="space-y-8">
               <HealthBar
                 label="Auth Server"
@@ -225,7 +242,7 @@ export default function AdminDashboard() {
               <div className="flex items-center gap-3">
                 <Activity className="size-4 text-primary animate-pulse" />
                 <p className="text-[9px] font-black text-primary uppercase tracking-widest">
-                  Real-time traffic monitoring active
+                  Real-time monitoring active
                 </p>
               </div>
             </div>
@@ -236,16 +253,14 @@ export default function AdminDashboard() {
   );
 }
 
-// --- SMALL COMPONENTS ---
-
 function HealthBar({ label, value, status, color }: any) {
   return (
     <div className="space-y-3">
       <div className="flex justify-between text-[9px] font-black uppercase tracking-[0.2em]">
-        <span className="text-slate-500">{label}</span>
-        <span className="text-white">{status}</span>
+        <span className="text-muted-foreground">{label}</span>
+        <span className="text-foreground">{status}</span>
       </div>
-      <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
+      <div className="h-1 w-full bg-secondary rounded-full overflow-hidden">
         <motion.div
           initial={{ width: 0 }}
           animate={{ width: value }}
@@ -261,7 +276,7 @@ function LoaderScreen() {
   return (
     <div className="h-[70vh] flex flex-col items-center justify-center gap-4">
       <Loader2 className="size-10 text-primary animate-spin" />
-      <p className="text-[10px] font-black text-slate-500 uppercase tracking-[0.4em] animate-pulse">
+      <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.4em] animate-pulse">
         Initializing Command Center
       </p>
     </div>

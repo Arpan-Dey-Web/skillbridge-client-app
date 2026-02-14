@@ -21,9 +21,55 @@ import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
 import { format } from "date-fns";
+import TutorCardSkeleton from "@/components/ui/TutorCardSkeleton";
 
-// Helper to convert "11:00 AM" to a comparable number
-const parseTimeToNumber = (timeStr: string) => {
+// --- Types & Interfaces ---
+interface User {
+  name: string;
+  image?: string;
+}
+
+interface Category {
+  name: string;
+}
+
+interface Availability {
+  id: string;
+  dayOfWeek: number;
+  startTime: string; // e.g., "11:00 AM"
+}
+
+interface Review {
+  id: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+  student: {
+    name: string;
+    image?: string;
+  };
+}
+
+interface Booking {
+  id: string;
+  startTime: string;
+  studentId: string;
+  review?: Review;
+}
+
+interface Tutor {
+  id: string;
+  bio: string;
+  hourlyRate: number;
+  averageRating: number;
+  user: User;
+  category: Category;
+  availability: Availability[];
+  bookings: Booking[];
+}
+
+// --- Helper Functions ---
+const parseTimeToNumber = (timeStr: string): number => {
   const [time, modifier] = timeStr.split(" ");
   let [hours, minutes] = time.split(":").map(Number);
   if (modifier === "PM" && hours < 12) hours += 12;
@@ -40,21 +86,18 @@ const daysOrder = [
   "Friday",
   "Saturday",
 ];
-
-function getDayName(day: number) {
-  return daysOrder[day];
-}
+const getDayName = (day: number): string => daysOrder[day] || "Unknown";
 
 export default function TutorProfilePage() {
   const params = useParams();
   const { data: session } = authClient.useSession();
-  const tutorId = Array.isArray(params.id) ? params.id[0] : params.id;
+  const tutorId = typeof params.id === "string" ? params.id : params.id?.[0];
 
-  const [tutor, setTutor] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [selectedSlot, setSelectedSlot] = useState<any>(null);
+  const [tutor, setTutor] = useState<Tutor | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [selectedSlot, setSelectedSlot] = useState<Availability | null>(null);
   const [duration, setDuration] = useState<number>(15);
-  const [hasBookedToday, setHasBookedToday] = useState(false);
+  const [hasBookedToday, setHasBookedToday] = useState<boolean>(false);
 
   const durations = [5, 10, 15, 30];
 
@@ -67,14 +110,12 @@ export default function TutorProfilePage() {
       minute: "numeric",
       hour12: false,
     });
-
     const parts = formatter.formatToParts(now);
-    const day = parts.find((p) => p.type === "weekday")?.value;
+    const day = parts.find((p) => p.type === "weekday")?.value || "";
     const hour = parseInt(parts.find((p) => p.type === "hour")?.value || "0");
     const minute = parseInt(
       parts.find((p) => p.type === "minute")?.value || "0",
     );
-
     const dateString = new Intl.DateTimeFormat("en-CA", {
       timeZone: "Asia/Dhaka",
     }).format(now);
@@ -83,7 +124,7 @@ export default function TutorProfilePage() {
       day,
       timeValue: hour * 100 + minute,
       dateString,
-      dayIndex: daysOrder.indexOf(day || ""),
+      dayIndex: daysOrder.indexOf(day),
     };
   }, []);
 
@@ -93,13 +134,14 @@ export default function TutorProfilePage() {
         .then((res) => res.json())
         .then((res) => {
           if (res.success) {
-            setTutor(res.data);
-            if (session?.user?.email) {
-              const alreadyBooked = res.data.bookings?.some((b: any) => {
+            const data: Tutor = res.data;
+            setTutor(data);
+            if (session?.user?.id) {
+              const alreadyBooked = data.bookings?.some((b) => {
                 const bookingDate = b.startTime.split("T")[0];
                 return (
                   bookingDate === dhakaContext.dateString &&
-                  b.studentId === (session.user as any).id
+                  b.studentId === session.user.id
                 );
               });
               setHasBookedToday(alreadyBooked);
@@ -112,8 +154,9 @@ export default function TutorProfilePage() {
   }, [tutorId, session, dhakaContext.dateString]);
 
   const bookSession = async () => {
-    if (!selectedSlot) return toast.error("Please select a time slot first!");
-    const toastId = toast.loading("Sending request to mentor...");
+    if (!selectedSlot || !tutor)
+      return toast.error("Please select a time slot first!");
+    const toastId = toast.loading("Synchronizing with mentor...");
 
     try {
       const [time, modifier] = selectedSlot.startTime.split(" ");
@@ -146,188 +189,171 @@ export default function TutorProfilePage() {
       const result = await response.json();
       if (!response.ok) throw new Error(result.message || "Booking failed");
 
-      toast.success("Request sent! Waiting for approval.", { id: toastId });
+      toast.success("Request sent for approval.", { id: toastId });
       setHasBookedToday(true);
       setSelectedSlot(null);
-    } catch (error: any) {
-      toast.error(error.message || "An unexpected error occurred", {
-        id: toastId,
-      });
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "An unexpected error occurred";
+      toast.error(message, { id: toastId });
     }
   };
 
-  // Extract reviews from bookings
-  const reviews =
-    tutor?.bookings?.filter((b: any) => b.review).map((b: any) => b.review) ||
-    [];
+  const reviews = useMemo(
+    () =>
+      tutor?.bookings
+        ?.filter((b): b is Booking & { review: Review } => !!b.review)
+        .map((b) => b.review) || [],
+    [tutor],
+  );
 
-  if (loading)
+  if (loading) <TutorCardSkeleton />;
+
+  if (!tutor)
     return (
-      <div className="min-h-screen bg-[#020617] flex items-center justify-center text-amber-500 font-bold uppercase italic animate-pulse">
-        Loading Mentor Profile...
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        Profile not found
       </div>
     );
 
   return (
-    <div className="min-h-screen bg-[#020617] text-white py-20">
+    <div className="min-h-screen bg-background text-foreground py-24 transition-colors duration-500">
       <div className="max-w-7xl mx-auto px-6">
         <Button
           variant="ghost"
           asChild
-          className="text-slate-500 hover:text-amber-500 mb-8 px-0"
+          className="text-muted-foreground hover:text-primary mb-12 px-0 group"
         >
           <Link href="/tutors" className="flex items-center gap-2">
-            <ArrowLeft className="size-4" />
-            <span className="font-bold uppercase tracking-widest text-[10px]">
-              Back to tutors
+            <ArrowLeft className="size-4 group-hover:-translate-x-1 transition-transform" />
+            <span className="font-black uppercase tracking-[0.2em] text-[10px]">
+              Directory Return
             </span>
           </Link>
         </Button>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
-          {/* LEFT COLUMN */}
-          <div className="lg:col-span-2 space-y-16">
-            <section>
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-8">
-                <Avatar className="size-32 border-4 border-white/5 shadow-2xl">
-                  <AvatarImage src={tutor?.user?.image} />
-                  <AvatarFallback className="bg-amber-500 text-black font-black text-2xl">
-                    {tutor?.user?.name?.[0]}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+          {/* Left: Content */}
+          <div className="lg:col-span-8 space-y-24">
+            <header className="flex flex-col md:flex-row items-center md:items-start gap-10">
+              <div className="relative">
+                <Avatar className="size-44 rounded-[2.5rem] border border-border shadow-2xl">
+                  <AvatarImage
+                    src={tutor.user.image}
+                    className="object-cover"
+                  />
+                  <AvatarFallback className="bg-primary text-primary-foreground text-4xl font-black">
+                    {tutor.user.name[0]}
                   </AvatarFallback>
                 </Avatar>
-                <div className="text-center md:text-left space-y-3">
-                  <div className="flex items-center gap-3">
-                    <h1 className="text-5xl font-black italic tracking-tighter">
-                      {tutor?.user?.name}
-                    </h1>
-                    <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 uppercase tracking-widest text-[10px]">
-                      <ShieldCheck className="size-3 mr-1" /> Verified Mentor
-                    </Badge>
-                  </div>
-                  <p className="text-amber-500 font-bold text-lg uppercase italic tracking-wider">
-                    {tutor?.category?.name} Expert
-                  </p>
-                  <div className="flex items-center gap-2 text-slate-400 justify-center md:justify-start">
-                    <Star className="size-5 fill-amber-500 text-amber-500" />
-                    <span className="font-bold text-white text-lg">
-                      {tutor?.averageRating.toFixed(1)}
-                    </span>
-                    <span className="text-xs text-slate-500 font-black uppercase tracking-widest">
-                      ({reviews?.length} Reviews)
-                    </span>
-                  </div>
+                <div className="absolute -bottom-2 -right-2 bg-background border border-border p-2 rounded-xl">
+                  <ShieldCheck className="size-6 text-primary" />
                 </div>
               </div>
 
-              {/* ABOUT SECTION */}
-              <div className="mt-12">
-                <h3 className="text-xl font-bold mb-4 flex items-center gap-2 uppercase tracking-tighter">
-                  <span className="size-2 bg-amber-500 rounded-full" /> About
-                  Mentor
-                </h3>
-                <p className="text-slate-400 text-lg leading-relaxed italic">
-                  {tutor?.bio}
-                </p>
-              </div>
-
-              {/* REVIEWS SECTION */}
-              <div className="mt-20 space-y-8">
-                <div className="flex items-center justify-between border-b border-white/5 pb-4">
-                  <h3 className="text-xl font-bold flex items-center gap-2 uppercase tracking-tighter">
-                    <MessageSquareQuote className="size-5 text-amber-500" />{" "}
-                    Student Reviews
-                  </h3>
-                  <Badge
-                    variant="outline"
-                    className="text-slate-500 border-white/10 uppercase tracking-[0.2em] text-[8px]"
-                  >
-                    Verified Feedback
+              <div className="text-center md:text-left pt-4">
+                <h1 className="text-3xl md:text-4xl font-black uppercase tracking-tight mb-2">
+                  {tutor.user.name}
+                </h1>
+                <div className="flex flex-wrap items-center gap-4 justify-center md:justify-start">
+                  <Badge className="bg-primary/10 text-primary border-primary/20 text-[10px] font-black uppercase tracking-widest px-4 py-1">
+                    {tutor.category.name} Architect
                   </Badge>
+                  <div className="flex items-center gap-2">
+                    <Star className="size-4 fill-primary text-primary" />
+                    <span className="font-black text-sm">
+                      {tutor.averageRating.toFixed(1)}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-black uppercase tracking-widest">
+                      ({reviews.length} Feedbacks)
+                    </span>
+                  </div>
                 </div>
+              </div>
+            </header>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {reviews.length > 0 ? (
-                    reviews.map((review: any) => (
-                      <Card
-                        key={review.id}
-                        className="bg-white/[0.02] border-white/5 rounded-3xl p-6 relative overflow-hidden group hover:bg-white/[0.04] transition-all"
-                      >
-                        <Quote className="absolute -right-2 -top-2 size-16 text-white/[0.03] group-hover:text-amber-500/5 transition-colors" />
-                        <div className="flex flex-col h-full justify-between gap-4">
-                          <div className="space-y-3">
-                            <div className="flex gap-0.5">
-                              {[...Array(5)].map((_, i) => (
-                                <Star
-                                  key={i}
-                                  className={cn(
-                                    "size-3",
-                                    i < review.rating
-                                      ? "fill-amber-500 text-amber-500"
-                                      : "text-white/10",
-                                  )}
-                                />
-                              ))}
-                            </div>
-                            <p className="text-slate-300 text-sm italic leading-relaxed">
-                              {review?.comment}
-                            </p>
-                          </div>
+            <section className="border-l-2 border-primary/10 pl-10">
+              <h3 className="text-[10px] font-black uppercase tracking-[0.4em] text-primary mb-6">
+                Manifesto
+              </h3>
+              <p className="text-muted-foreground text-2xl italic leading-relaxed font-medium">
+                {tutor.bio}
+              </p>
+            </section>
 
-                          <div className="flex items-center gap-3 pt-4 border-t border-white/5">
-                            <Avatar className="size-8 border border-white/10">
-                              <AvatarImage src={review?.student?.image} />
-                              <AvatarFallback className="text-[10px] bg-white/10 font-bold uppercase">
-                                {review?.student?.name?.[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="text-[10px] font-black text-white uppercase tracking-widest">
-                                {review?.student?.name}
-                              </p>
-                              <p className="text-[8px] text-slate-500 font-bold uppercase tracking-tighter">
-                                {format(
-                                  new Date(review?.createdAt),
-                                  "MMMM yyyy",
-                                )}
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </Card>
-                    ))
-                  ) : (
-                    <div className="col-span-full py-12 text-center bg-white/[0.02] rounded-3xl border border-dashed border-white/10">
-                      <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">
-                        No reviews yet for this mentor.
+            <section className="space-y-12">
+              <h3 className="text-lg font-black uppercase tracking-[0.2em] flex items-center gap-3">
+                <MessageSquareQuote className="size-5 text-primary" /> Verified
+                Reviews
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {reviews.map((review) => (
+                  <div
+                    key={review.id}
+                    className="bg-card border border-border rounded-[3rem] p-10 relative overflow-hidden group"
+                  >
+                    <Quote className="absolute -top-4 -right-4 size-24 text-primary/3 group-hover:text-primary/[0.07] transition-all" />
+                    <div className="relative z-10 space-y-6">
+                      <div className="flex gap-1">
+                        {[...Array(5)].map((_, i) => (
+                          <Star
+                            key={i}
+                            className={cn(
+                              "size-3",
+                              i < review.rating
+                                ? "fill-primary text-primary"
+                                : "text-border",
+                            )}
+                          />
+                        ))}
+                      </div>
+                      <p className="text-muted-foreground text-sm font-medium italic">
+                        {review.comment}
                       </p>
+                      <div className="flex items-center gap-4 pt-6 border-t border-border">
+                        <Avatar className="size-10">
+                          <AvatarImage src={review.student.image} />
+                          <AvatarFallback className="text-[10px] font-black">
+                            {review.student.name[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="text-[10px] font-black uppercase tracking-wider">
+                            {review.student.name}
+                          </p>
+                          <p className="text-[8px] text-muted-foreground font-bold uppercase">
+                            {format(new Date(review.createdAt), "MMM yyyy")}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  )}
-                </div>
+                  </div>
+                ))}
               </div>
             </section>
           </div>
 
-          {/* RIGHT COLUMN: BOOKING (UNCHANGED) */}
-          <aside>
-            <Card className="bg-white/5 border border-white/10 rounded-[2.5rem] overflow-hidden sticky top-8 backdrop-blur-md shadow-2xl">
-              <div className="bg-amber-500 p-8 text-black">
-                <p className="text-[10px] font-black uppercase tracking-[0.2em] mb-1">
-                  Session Investment
+          {/* Right: Booking */}
+          <aside className="lg:col-span-4">
+            <Card className="bg-card border-border rounded-[3.5rem] sticky top-28 overflow-hidden shadow-2xl">
+              <div className="bg-primary p-12 text-primary-foreground">
+                <p className="text-[10px] font-black uppercase tracking-[0.3em] mb-2 opacity-70">
+                  Investment
                 </p>
-                <div className="flex items-baseline gap-1">
-                  <h2 className="text-5xl font-black tracking-tighter">
-                    ${((tutor?.hourlyRate / 60) * duration).toFixed(2)}
+                <div className="flex items-baseline gap-2">
+                  <h2 className="text-6xl font-black tracking-tighter">
+                    ${((tutor.hourlyRate / 60) * duration).toFixed(2)}
                   </h2>
-                  <span className="text-sm font-bold uppercase">
+                  <span className="text-xs font-black uppercase tracking-widest">
                     / {duration}m
                   </span>
                 </div>
               </div>
 
-              <CardContent className="p-8 space-y-8">
-                <div>
-                  <h4 className="font-bold mb-4 text-white uppercase tracking-widest text-[10px] flex items-center gap-2">
-                    <Timer className="size-4 text-amber-500" /> 1. Duration
+              <CardContent className="p-10 space-y-10">
+                <div className="space-y-6">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
+                    <Timer className="size-4 text-primary" /> 01. Interval
                   </h4>
                   <div className="grid grid-cols-4 gap-2">
                     {durations.map((d) => (
@@ -335,10 +361,10 @@ export default function TutorProfilePage() {
                         key={d}
                         onClick={() => setDuration(d)}
                         className={cn(
-                          "py-3 rounded-xl border text-[10px] font-black transition-all",
+                          "py-4 rounded-2xl border text-[10px] font-black transition-all",
                           duration === d
-                            ? "bg-amber-500 text-black border-amber-500"
-                            : "bg-white/5 border-white/10 text-slate-400",
+                            ? "bg-primary text-primary-foreground border-primary"
+                            : "bg-background border-border text-muted-foreground",
                         )}
                       >
                         {d}m
@@ -347,50 +373,38 @@ export default function TutorProfilePage() {
                   </div>
                 </div>
 
-                <div>
-                  <h4 className="font-bold mb-4 text-white uppercase tracking-widest text-[10px] flex items-center gap-2">
-                    <Clock className="size-4 text-amber-500" /> 2. Available
-                    Schedule
+                <div className="space-y-6">
+                  <h4 className="text-[10px] font-black uppercase tracking-[0.2em] flex items-center gap-2">
+                    <Clock className="size-4 text-primary" /> 02.
+                    Synchronization
                   </h4>
-                  <div className="space-y-3">
-                    {tutor?.availability?.map((slot: any) => {
+                  <div className="space-y-3 max-h-62.5 overflow-y-auto custom-scrollbar pr-2">
+                    {tutor.availability.map((slot) => {
                       const dayName = getDayName(slot.dayOfWeek);
                       const isToday = dayName === dhakaContext.day;
-                      const slotTimeValue = parseTimeToNumber(slot.startTime);
-                      const hasPassed =
-                        isToday && slotTimeValue <= dhakaContext.timeValue;
-                      const isAvailable = isToday ? !hasPassed : true;
+                      const isAvailable = isToday
+                        ? parseTimeToNumber(slot.startTime) >
+                          dhakaContext.timeValue
+                        : true;
 
                       return (
                         <button
                           key={slot.id}
+                          disabled={!isAvailable}
                           onClick={() => setSelectedSlot(slot)}
                           className={cn(
-                            "w-full flex justify-between items-center p-4 rounded-2xl border transition-all active:scale-95",
+                            "w-full flex justify-between items-center p-5 rounded-2xl border transition-all",
                             selectedSlot?.id === slot.id
-                              ? "border-amber-500 bg-amber-500/10 shadow-lg shadow-amber-500/5"
-                              : "bg-white/5 border-white/10 hover:border-amber-500/30",
-                            !isAvailable && "opacity-60 italic",
+                              ? "border-primary bg-primary/5 shadow-inner"
+                              : "bg-background border-border",
+                            !isAvailable &&
+                              "opacity-20 grayscale cursor-not-allowed",
                           )}
                         >
-                          <div className="flex flex-col items-start">
-                            <span
-                              className={cn(
-                                "font-black text-[10px] uppercase tracking-widest",
-                                isAvailable
-                                  ? "text-amber-500"
-                                  : "text-slate-500",
-                              )}
-                            >
-                              {dayName}
-                            </span>
-                            {hasPassed && isToday && (
-                              <span className="text-[8px] text-red-500 font-black uppercase">
-                                Time Passed
-                              </span>
-                            )}
-                          </div>
-                          <span className="text-white font-mono font-bold text-sm">
+                          <span className="text-[9px] font-black uppercase tracking-widest text-primary">
+                            {dayName}
+                          </span>
+                          <span className="text-sm font-black tracking-tight">
                             {slot.startTime}
                           </span>
                         </button>
@@ -400,24 +414,16 @@ export default function TutorProfilePage() {
                 </div>
 
                 <Button
-                  className={cn(
-                    "w-full h-16 rounded-2xl text-md font-black uppercase tracking-widest transition-all",
-                    selectedSlot
-                      ? "bg-white text-black hover:bg-amber-500"
-                      : "bg-white/10 text-slate-600",
-                  )}
+                  disabled={!selectedSlot || hasBookedToday}
                   onClick={bookSession}
+                  className="w-full h-18 py-8 rounded-2xl text-xs font-black uppercase tracking-[0.2em] shadow-xl"
                 >
-                  {selectedSlot ? "Secure Session" : "Select Time"}
+                  {hasBookedToday
+                    ? "Session Secured"
+                    : selectedSlot
+                      ? "Confirm Matrix"
+                      : "Select Slot"}
                 </Button>
-
-                <div className="flex items-start gap-2 p-4 bg-amber-500/5 border border-amber-500/10 rounded-2xl">
-                  <AlertCircle className="size-4 text-amber-500 shrink-0 mt-0.5" />
-                  <p className="text-[9px] text-amber-200/60 font-black uppercase tracking-wider leading-tight">
-                    All slots are currently unlocked for selection. Please
-                    ensure you select a future time.
-                  </p>
-                </div>
               </CardContent>
             </Card>
           </aside>

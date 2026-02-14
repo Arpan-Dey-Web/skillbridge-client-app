@@ -1,8 +1,8 @@
 "use client";
-
 import * as React from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation"; // useRouter যোগ করা হয়েছে
+import { usePathname, useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import {
   Home,
   LayoutDashboard,
@@ -16,13 +16,18 @@ import {
   Wallet,
   Sparkles,
   LogOut,
+  Sun,
+  Moon,
+  Clock,
+  ClipboardList,
+  Monitor,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter, // Footer যোগ করা হয়েছে
+  SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
   SidebarGroupLabel,
@@ -36,6 +41,13 @@ import { Roles } from "@/constants/roles";
 import { adminRoutes, studentRoutes, tutorRoutes } from "@/routes/Routes";
 import { Route } from "@/types/routes.types";
 import { authClient } from "@/lib/auth-client";
+import { Button } from "./button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./dropdown-menu";
 
 const iconMap: Record<string, any> = {
   Home: Home,
@@ -49,6 +61,8 @@ const iconMap: Record<string, any> = {
   Profile: UserCircle,
   Settings: Settings2,
   Finance: Wallet,
+  Availability: Clock,
+  "Booking Request": ClipboardList,
 };
 
 export function AppSidebar({
@@ -58,14 +72,16 @@ export function AppSidebar({
   user: { role: string };
 } & React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
-  const router = useRouter(); // রিডাইরেক্ট করার জন্য
+  const router = useRouter();
+  const [mounted, setMounted] = React.useState(false);
+  React.useEffect(() => setMounted(true), []);
+  const { theme, setTheme } = useTheme();
 
-  // ১. সাইন আউট লজিক
   const handleSignOut = async () => {
     await authClient.signOut({
       fetchOptions: {
         onSuccess: () => {
-          router.push("/"); // হোম পেজে পাঠিয়ে দিবে
+          router.push("/");
           router.refresh();
         },
       },
@@ -88,27 +104,54 @@ export function AppSidebar({
   }
 
   return (
-    <Sidebar className="border-r border-white/5 bg-[#020617]" {...props}>
+    <Sidebar className="border-r border-border bg-card" {...props}>
       <SidebarHeader className="p-6">
-        <Link href="/" className="flex items-center gap-3 group">
-          <div className="size-10 bg-amber-500 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.3)] group-hover:scale-105 transition-transform">
-            <GraduationCap className="size-6 text-black fill-current" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-white font-black leading-none tracking-tighter text-lg">
-              LearnHub
-            </span>
-            <span className="text-[10px] text-amber-500 font-bold uppercase tracking-widest">
-              Platform
-            </span>
-          </div>
-        </Link>
+        <div className="flex items-center justify-between">
+          <Link href="/" className="flex items-center gap-3 group">
+            <div className="size-10 bg-amber-500 rounded-xl flex items-center justify-center shadow-[0_0_15px_rgba(245,158,11,0.3)] group-hover:scale-105 transition-transform">
+              <GraduationCap className="size-6 text-black fill-current" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-foreground font-black leading-none tracking-tighter text-lg">
+                LearnHub
+              </span>
+              <span className="text-[10px] text-amber-500 font-bold uppercase tracking-widest">
+                Platform
+              </span>
+            </div>
+          </Link>
+
+          {/* Theme Toggle */}
+          {/* Theme Switcher */}
+          {mounted && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                  <span className="sr-only">Toggle theme</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setTheme("light")}>
+                  <Sun className="mr-2 h-4 w-4" /> Light
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                  <Moon className="mr-2 h-4 w-4" /> Dark
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("system")}>
+                  <Monitor className="mr-2 h-4 w-4" /> System
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+        </div>
       </SidebarHeader>
 
       <SidebarContent className="px-2 scrollbar-none">
         {routes.map((group) => (
           <SidebarGroup key={group.title} className="py-4">
-            <SidebarGroupLabel className="text-slate-500 uppercase tracking-widest text-[10px] font-black px-4 mb-4">
+            <SidebarGroupLabel className="text-muted-foreground uppercase tracking-widest text-[10px] font-black px-4 mb-4">
               {group.title}
             </SidebarGroupLabel>
             <SidebarGroupContent>
@@ -123,8 +166,8 @@ export function AppSidebar({
                         className={cn(
                           "flex items-center gap-3 px-4 py-6 transition-all duration-300 rounded-2xl",
                           isActive
-                            ? "bg-amber-500 text-black font-bold shadow-[0_10px_20px_rgba(245,158,11,0.15)] hover:bg-amber-500 hover:text-black active:bg-amber-500" // এখানে hover এবং active ফিক্স করা হয়েছে
-                            : "text-slate-400 hover:text-white hover:bg-white/5",
+                            ? "bg-amber-500 text-black font-bold shadow-[0_10px_20px_rgba(245,158,11,0.15)]"
+                            : "text-muted-foreground hover:text-foreground hover:bg-secondary",
                         )}
                       >
                         <Link href={item.url}>
@@ -146,13 +189,12 @@ export function AppSidebar({
         ))}
       </SidebarContent>
 
-
-      <SidebarFooter className="p-4 border-t border-white/5">
+      <SidebarFooter className="p-4 border-t border-border">
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton
               onClick={handleSignOut}
-              className="w-full flex items-center gap-3 px-4 py-6 text-slate-400 hover:text-red-400 hover:bg-red-400/10 transition-all duration-300 rounded-2xl"
+              className="w-full flex items-center gap-3 px-4 py-6 text-muted-foreground hover:text-red-400 hover:bg-red-400/10 transition-all duration-300 rounded-2xl"
             >
               <LogOut className="size-5" />
               <span className="font-bold uppercase tracking-widest text-xs">

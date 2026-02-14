@@ -62,7 +62,7 @@ const Navbar = ({ className }: { className?: string }) => {
       className={cn(
         "fixed top-0 z-50 w-full transition-all duration-500",
         isScrolled ? "pt-4" : "pt-0",
-        className,
+        className
       )}
     >
       <nav
@@ -70,7 +70,7 @@ const Navbar = ({ className }: { className?: string }) => {
           "mx-auto transition-all duration-500 ease-in-out flex items-center justify-between",
           isScrolled
             ? "max-w-5xl rounded-2xl border border-border bg-background/60 backdrop-blur-xl shadow-2xl px-6 py-2"
-            : "w-full max-w-7xl border-b border-border/50 bg-transparent px-8 py-5",
+            : "w-full max-w-7xl border-b border-border/50 bg-transparent px-8 py-5"
         )}
       >
         {/* Logo */}
@@ -99,7 +99,7 @@ const Navbar = ({ className }: { className?: string }) => {
                   "px-4 py-2 text-sm font-bold transition-all rounded-full",
                   isActive
                     ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent",
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
                 )}
               >
                 {item.title}
@@ -168,10 +168,7 @@ const Navbar = ({ className }: { className?: string }) => {
                   <Menu className="size-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent
-                side="right"
-                className="bg-background border-border"
-              >
+              <SheetContent side="right" className="bg-background border-border">
                 <div className="flex flex-col gap-6 mt-10">
                   {menu.map((item) => (
                     <Link
@@ -179,9 +176,7 @@ const Navbar = ({ className }: { className?: string }) => {
                       href={item.url}
                       className={cn(
                         "text-3xl font-black tracking-tighter transition-colors",
-                        pathname === item.url
-                          ? "text-primary"
-                          : "text-muted-foreground",
+                        pathname === item.url ? "text-primary" : "text-muted-foreground"
                       )}
                     >
                       {item.title}

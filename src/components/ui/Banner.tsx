@@ -44,7 +44,7 @@ const Banner = () => {
                 className="bg-primary hover:opacity-90 text-primary-foreground font-bold h-14 px-8 rounded-2xl group transition-all shadow-lg shadow-primary/20"
               >
                 Join LearnHub
-                <ArrowRight className="ml-2 size-5 group-hover:translate-x-1 transition-transform" />
+                <ArrowRight className="ml-2 size-5 " />
               </Button>
             </Link>
 
@@ -52,7 +52,7 @@ const Banner = () => {
               <Button
                 size="lg"
                 variant="outline"
-                className="border-border bg-card/50 hover:bg-accent text-foreground h-14 px-8 rounded-2xl transition-all"
+                className="border-border bg-card/50 hover:bg-accent text-foreground h-14 px-8 rounded-2xl transition-all hover:-translate-y-1" // Added slight lift
               >
                 Browse All
               </Button>
@@ -145,56 +145,81 @@ const Banner = () => {
           </div>
 
           {/* Design & Arts Card */}
-          <div className="col-span-2 bg-card border border-border p-8 rounded-[2.5rem] flex items-center justify-between hover:border-primary/50 transition-all relative overflow-hidden">
-            {/* Background Scrolling Tags */}
-            <div className="absolute inset-0 opacity-[0.05] pointer-events-none flex flex-col justify-center gap-2 rotate-[-5deg] scale-110">
+          <motion.div
+            whileHover={{ y: -5 }}
+            className="col-span-2 bg-card border border-border p-8 rounded-[2.5rem] flex items-center justify-between hover:border-primary/50 transition-all relative overflow-hidden group"
+          >
+            {/* Background Scrolling Tags with Edge Fading */}
+            <div className="absolute inset-0 opacity-[0.05] dark:opacity-[0.08] pointer-events-none flex flex-col justify-center gap-2 rotate-[-5deg] scale-110">
+              {/* Gradient Mask to fade text at edges */}
+              <div className="absolute inset-0 bg-gradient-to-r from-card via-transparent to-card z-10" />
+
               <motion.div
-                animate={{ x: [0, -200] }}
-                transition={{ duration: 30, repeat: Infinity, ease: "linear" }}
-                className="whitespace-nowrap text-5xl font-black text-foreground"
+                animate={{ x: [0, -400] }}
+                transition={{ duration: 40, repeat: Infinity, ease: "linear" }}
+                className="whitespace-nowrap text-6xl font-black text-foreground uppercase"
               >
-                #FIGMA #UIUX #3D #CANVAS #SPLINE #ADOBE #FIGMA #UIUX
+                #FIGMA #UIUX #3D #CANVAS #SPLINE #ADOBE #FIGMA #UIUX #3D #CANVAS
               </motion.div>
+
               <motion.div
-                animate={{ x: [-200, 0] }}
-                transition={{ duration: 35, repeat: Infinity, ease: "linear" }}
-                className="whitespace-nowrap text-5xl font-black text-foreground"
+                animate={{ x: [-400, 0] }}
+                transition={{ duration: 45, repeat: Infinity, ease: "linear" }}
+                className="whitespace-nowrap text-6xl font-black text-foreground uppercase"
               >
-                #BRANDING #MOTION #WEB #MOBILE #ART #BRANDING #MOTION
+                #BRANDING #MOTION #WEB #MOBILE #ART #BRANDING #MOTION #WEB
+                #MOBILE
               </motion.div>
             </div>
 
-            <div className="relative z-10">
-              <h3 className="text-2xl font-bold text-foreground">
+            {/* Left Content */}
+            <div className="relative z-20">
+              <div className="flex items-center gap-2 mb-2">
+                <div className="size-2 rounded-full bg-primary animate-pulse" />
+                <span className="text-[10px] font-black uppercase tracking-[0.2em] text-primary">
+                  Creative Hub
+                </span>
+              </div>
+              <h3 className="text-2xl md:text-3xl font-black text-foreground tracking-tighter">
                 Design & Arts
               </h3>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground font-medium italic">
                 UI/UX and Digital Illustration.
               </p>
             </div>
 
-            <div className="flex -space-x-3 relative z-10">
-              {/* Shadcn Avatar Stack */}
+            {/* Right Content: Interactive Avatar Stack */}
+            <motion.div
+              className="flex -space-x-4 relative z-20"
+              whileHover="hover"
+            >
               {[1, 2, 3].map((i) => (
-                <Avatar key={i} className="border-2 border-background size-10">
-                  <AvatarImage
-                    src={`https://i.pravatar.cc/150?u=${i}`}
-                    alt={`Student ${i}`}
-                  />
-                  <AvatarFallback className="bg-muted text-foreground text-[10px]">
-                    U{i}
-                  </AvatarFallback>
-                </Avatar>
+                <motion.div
+                  key={i}
+                  variants={{
+                    hover: { x: i * -5 }, // Fans out slightly on hover
+                  }}
+                  className="relative"
+                >
+                  <Avatar className="border-4 border-card size-12 shadow-xl">
+                    <AvatarImage
+                      src={`https://i.pravatar.cc/150?u=${i + 20}`}
+                      alt={`Student ${i}`}
+                    />
+                    <AvatarFallback className="bg-muted text-foreground text-[10px]">
+                      U{i}
+                    </AvatarFallback>
+                  </Avatar>
+                </motion.div>
               ))}
 
-              {/* The Counter as a Shadcn Avatar */}
-              <Avatar className="border-2 border-background size-10 shadow-lg">
-                <AvatarFallback className="bg-primary text-primary-foreground text-[10px] font-bold">
+              <Avatar className="border-4 border-card size-12 shadow-xl ring-2 ring-primary/20">
+                <AvatarFallback className="bg-primary text-primary-foreground text-xs font-black">
                   +2k
                 </AvatarFallback>
               </Avatar>
-            </div>
-          </div>
+            </motion.div>
+          </motion.div>
         </div>
       </div>
     </section>

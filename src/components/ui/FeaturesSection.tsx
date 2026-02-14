@@ -7,25 +7,25 @@ import { motion } from "framer-motion";
 const features = [
   {
     title: "Verified Experts",
-    desc: "Every tutor is background-checked and vetted for quality excellence.",
+    desc: "Every tutor is background-checked and vetted for quality excellence, ensuring elite mentorship.",
     icon: <ShieldCheck className="size-6 text-primary" />,
     className: "md:col-span-2",
   },
   {
     title: "Instant Booking",
-    desc: "Schedule sessions in seconds with our lightning-fast system.",
+    desc: "Schedule sessions in seconds with our high-precision system.",
     icon: <Zap className="size-6 text-primary" />,
     className: "md:col-span-1",
   },
   {
     title: "Virtual Classroom",
-    desc: "Integrated video and interactive whiteboarding tools.",
+    desc: "Integrated video and interactive whiteboarding tools for deep immersion.",
     icon: <Video className="size-6 text-primary" />,
     className: "md:col-span-1",
   },
   {
     title: "Flexible Timing",
-    desc: "Learn on your own schedule, anytime, anywhere in the world.",
+    desc: "Learn on your own schedule, anytime, anywhere in the world without limits.",
     icon: <Calendar className="size-6 text-primary" />,
     className: "md:col-span-2",
   },
@@ -34,57 +34,71 @@ const features = [
 export function FeaturesSection() {
   return (
     <section className="py-24 bg-background relative overflow-hidden transition-colors duration-500">
-      {/* Subtle Background Glow - Balanced for both modes */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
+      {/* Background Architectural Elements */}
+      <div className="absolute top-0 left-1/4 w-[600px] h-[600px] bg-primary/[0.03] dark:bg-primary/[0.02] blur-[120px] rounded-full pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10">
-        <div className="text-center max-w-2xl mx-auto mb-20">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-primary text-[10px] font-black uppercase tracking-widest mb-6">
-            Our Platform
+        {/* Editorial Header */}
+        <div className="text-left max-w-2xl mb-20 border-l-4 border-primary pl-8">
+          <div className="text-[10px] font-black text-primary uppercase tracking-[0.4em] mb-4">
+            Infrastructure
           </div>
-          <h2 className="text-4xl md:text-6xl font-black text-foreground tracking-tighter mb-6 leading-[0.9]">
-            Everything you need <br />
-            <span className="text-primary italic">to succeed.</span>
+          <h2 className="text-5xl md:text-7xl font-black text-foreground tracking-tighter mb-6 leading-none uppercase">
+            Built for <br />
+            <span className="shimmer-gold italic font-serif lowercase">
+              precision.
+            </span>
           </h2>
-          <p className="text-muted-foreground text-lg font-medium">
-            LearnHub provides the tools for both students and tutors to have a
-            seamless, high-impact learning experience.
+          <p className="text-muted-foreground text-lg font-medium italic opacity-80">
+            "The tools of a master define the quality of the craft."
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {/* Bento Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {features.map((f, i) => (
             <motion.div
               key={i}
-              initial={{ opacity: 0, y: 20 }}
+              initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.1 }}
+              transition={{ duration: 0.6, delay: i * 0.1 }}
               viewport={{ once: true }}
               className={cn(
-                "group relative p-10 rounded-[2.5rem] bg-card border border-border overflow-hidden transition-all duration-500 hover:border-primary/40 shadow-sm hover:shadow-xl hover:shadow-primary/5",
+                "group relative p-12 rounded-[3rem] bg-card border border-border overflow-hidden transition-all duration-700",
+                "hover:border-primary/40 hover:shadow-[0_30px_60px_rgba(0,0,0,0.1)] dark:hover:shadow-[0_30px_60px_rgba(var(--primary-rgb),0.1)]",
                 f.className,
               )}
             >
-              {/* Hover Light Effect - Tuned for theme visibility */}
-              <div className="absolute -top-24 -right-24 size-48 bg-primary/10 blur-[60px] rounded-full group-hover:bg-primary/20 transition-all duration-500 pointer-events-none" />
+              {/* Interactive Hover Gradient */}
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/[0.03] via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700" />
 
               <div className="relative z-10 h-full flex flex-col justify-between">
                 <div>
-                  <div className="size-14 rounded-2xl bg-background border border-border flex items-center justify-center mb-8 group-hover:border-primary/30 group-hover:shadow-lg transition-all duration-500">
+                  {/* High-End Icon Frame */}
+                  <div
+                    className="size-16 rounded-2xl bg-background border border-border flex items-center justify-center mb-10 
+                                 group-hover:border-primary/30 group-hover:bg-primary/[0.02] transition-all duration-500 shadow-sm"
+                  >
                     {f.icon}
                   </div>
-                  <h3 className="text-2xl font-black text-foreground mb-3 tracking-tight group-hover:text-primary transition-colors">
+
+                  <h3 className="text-3xl font-black text-foreground mb-4 tracking-tight uppercase leading-none">
                     {f.title}
                   </h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed max-w-[280px]">
+
+                  {/* Accent Line */}
+                  <div className="w-8 h-[1px] bg-primary/30 group-hover:w-16 group-hover:bg-primary transition-all duration-500 mb-4" />
+
+                  <p className="text-muted-foreground text-sm leading-relaxed max-w-[320px] font-medium">
                     {f.desc}
                   </p>
                 </div>
 
-                <div className="mt-8 flex justify-end">
-                  <div className="size-10 rounded-full bg-background border border-border flex items-center justify-center text-muted-foreground/30 group-hover:text-primary group-hover:border-primary/50 group-hover:scale-110 transition-all">
-                    <ArrowUpRight className="size-5" />
-                  </div>
+                <div className="mt-12 flex justify-between items-center">
+                  <span className="text-[10px] font-black text-muted-foreground uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-all duration-500">
+                    Explore Feature
+                  </span>
+                  
                 </div>
               </div>
             </motion.div>

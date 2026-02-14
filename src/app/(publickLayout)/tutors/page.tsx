@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -16,83 +17,65 @@ import {
   SlidersHorizontal,
   ChevronLeft,
   ChevronRight,
-  Loader2,
 } from "lucide-react";
 import TutorCard from "@/components/ui/Tutorcard";
 import { cn } from "@/lib/utils";
 
-export default function TutorsPage() {
-  const [tutors, setTutors] = useState([]);
-  const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+// --- Fetch Functions ---
+const fetchCategories = async () => {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories`);
+  if (!res.ok) throw new Error("Failed to load categories");
+  const data = await res.json();
+  return data.data;
+};
 
-  // Filter & Pagination States
+const fetchTutorsData = async ({ queryKey }: any) => {
+  const [_key, { page, search, selectedCategory, maxPrice }] = queryKey;
+
+  let url = `${process.env.NEXT_PUBLIC_APP_URL}/api/tutors/all`;
+  const params = new URLSearchParams({
+    page: page.toString(),
+    limit: "10",
+    search: search,
+    maxPrice: maxPrice,
+  });
+
+  if (selectedCategory !== "all") {
+    url = `${process.env.NEXT_PUBLIC_APP_URL}/api/categories/${selectedCategory}/tutors`;
+  }
+
+  const res = await fetch(`${url}?${params.toString()}`);
+  if (!res.ok) throw new Error("Failed to fetch tutors");
+  return res.json();
+};
+
+export default function TutorsPage() {
+  // Filter & Pagination States (Kept for UI control)
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [maxPrice, setMaxPrice] = useState("");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
 
-  // Fetch Tutors Function
-  const fetchTutors = useCallback(
-    async (currentPage: number) => {
-      setLoading(true);
-      try {
-        let url = `${process.env.NEXT_PUBLIC_APP_URL}/api/tutors/all`;
-        const params = new URLSearchParams({
-          page: currentPage.toString(),
-          limit: "10",
-          search: search,
-          maxPrice: maxPrice,
-        });
+  // 1. Fetch Categories
+  const { data: categories } = useQuery({
+    queryKey: ["categories"],
+    queryFn: fetchCategories,
+  });
 
-        if (selectedCategory !== "all") {
-          // আপনার নতুন মডুলার রাউট অনুযায়ী:
-          url = `${process.env.NEXT_PUBLIC_APP_URL}/api/categories/${selectedCategory}/tutors`;
-        }
+  // 2. Fetch Tutors (Depends on page and filters)
+  const { data: tutorResponse, isLoading: loading } = useQuery({
+    queryKey: ["tutors", { page, search, selectedCategory, maxPrice }],
+    queryFn: fetchTutorsData,
+    placeholderData: (previousData) => previousData, // Smooth transition between pages
+  });
 
-        const res = await fetch(`${url}?${params.toString()}`);
-        const data = await res.json();
+  const tutors = tutorResponse?.data || [];
+  const totalPages =
+    tutorResponse?.pagination?.totalPages || tutorResponse?.totalPages || 1;
 
-        if (data.success) {
-          setTutors(data.data);
-          // ব্যাকএন্ড রেসপন্স থেকে টোটাল পেজ সেট করা
-          setTotalPages(data.pagination?.totalPages || data.totalPages || 1);
-        }
-      } catch (error) {
-        console.error("Error fetching tutors:", error);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [search, selectedCategory, maxPrice],
-  );
 
-  // Initial categories fetch
-  useEffect(() => {
-    const fetchCats = async () => {
-      try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_APP_URL}/api/categories`,
-        );
-        const data = await res.json();
-        setCategories(data.data);
-      } catch (err) {
-        console.error("Failed to load categories");
-      }
-    };
-    fetchCats();
-  }, []);
-
-  // Fetch tutors when page or filters change
-  useEffect(() => {
-    fetchTutors(page);
-  }, [page, fetchTutors]);
-
-  // ক্যাটাগরি বা ফিল্টার চেঞ্জ হলে পেজ ১-এ রিসেট করা
   const handleFilterApply = () => {
     setPage(1);
-    fetchTutors(1);
   };
 
   return (
@@ -124,9 +107,9 @@ export default function TutorsPage() {
                   <Select
                     onValueChange={(val) => {
                       setSelectedCategory(val);
-                      setPage(1); // অটো আপডেট
+                      setPage(1);
                     }}
-                    defaultValue="all"
+                    value={selectedCategory}
                   >
                     <SelectTrigger className="bg-white/5 border-white/10 h-14 rounded-2xl focus:ring-primary/50 transition-all">
                       <SelectValue placeholder="All Categories" />

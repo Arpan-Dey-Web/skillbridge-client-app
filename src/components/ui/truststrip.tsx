@@ -16,7 +16,7 @@ export function TrustStrip() {
   return (
     <div
       ref={ref}
-      className="w-full bg-[#05070a] border-y border-white/5 py-12"
+      className="w-full bg-card border-y border-border py-12 transition-colors duration-500"
     >
       <div className="container mx-auto max-w-6xl">
         <div className="flex flex-wrap justify-between items-center gap-y-10">
@@ -29,10 +29,10 @@ export function TrustStrip() {
               // Responsive width: 50% on mobile, auto on desktop
               className="w-1/2 md:w-auto flex flex-col items-center md:items-start px-4"
             >
-              <div className="text-3xl md:text-4xl font-black text-[#f3a81c] tracking-tight">
+              <div className="text-3xl md:text-4xl font-black text-primary tracking-tight">
                 {stat.value}
               </div>
-              <div className="text-[11px] font-bold text-gray-500 uppercase tracking-[0.2em] mt-1">
+              <div className="text-[11px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-1">
                 {stat.label}
               </div>
             </motion.div>

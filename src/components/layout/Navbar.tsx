@@ -1,10 +1,11 @@
 "use client";
 
 import { cn } from "@/lib/utils";
-import { Menu, LogOut } from "lucide-react";
+import { Menu, LogOut, Sun, Moon, Monitor } from "lucide-react";
 import { useState, useEffect, useMemo } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTheme } from "next-themes";
 import { Button } from "../ui/button";
 import {
   Sheet,
@@ -13,19 +14,27 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "../ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { authClient } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Image from "next/image";
 import { Roles } from "@/constants/roles";
 
-interface NavbarProps {
-  className?: string;
-}
-
-const Navbar = ({ className }: NavbarProps) => {
+const Navbar = ({ className }: { className?: string }) => {
   const [isScrolled, setIsScrolled] = useState(false);
+  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+  const { theme, setTheme } = useTheme();
   const { data: session } = authClient.useSession();
+
+  // Prevent hydration mismatch
+  useEffect(() => setMounted(true), []);
+
   const menu = useMemo(() => {
     const items = [
       { title: "Home", url: "/" },
@@ -33,12 +42,12 @@ const Navbar = ({ className }: NavbarProps) => {
       { title: "About", url: "/about" },
     ];
 
-
-    let dashboardPath = "/dashboard";
-    if (session?.user?.role === Roles.admin) dashboardPath = "/dashboard/admin";
-    if (session?.user?.role === Roles.tutor) dashboardPath = "/dashboard/tutor";
-
-    items.push({ title: "Dashboard", url: dashboardPath });
+    if (session?.user) {
+      let dashboardPath = "/dashboard";
+      if (session.user.role === Roles.admin) dashboardPath = "/admin";
+      if (session.user.role === Roles.tutor) dashboardPath = "/tutor/dashboard";
+      items.push({ title: "Dashboard", url: dashboardPath });
+    }
     return items;
   }, [session]);
 
@@ -60,8 +69,8 @@ const Navbar = ({ className }: NavbarProps) => {
         className={cn(
           "mx-auto transition-all duration-500 ease-in-out flex items-center justify-between",
           isScrolled
-            ? "max-w-5xl rounded-2xl border border-white/10 bg-black/60 backdrop-blur-xl shadow-2xl px-6 py-2"
-            : "w-full max-w-7xl border-b border-white/5 bg-transparent px-8 py-5",
+            ? "max-w-5xl rounded-2xl border border-border bg-background/60 backdrop-blur-xl shadow-2xl px-6 py-2"
+            : "w-full max-w-7xl border-b border-border/50 bg-transparent px-8 py-5",
         )}
       >
         {/* Logo */}
@@ -70,20 +79,18 @@ const Navbar = ({ className }: NavbarProps) => {
             src="https://res.cloudinary.com/dioe6nj4y/image/upload/v1770392888/leader_jhzssx.png"
             height={30}
             width={30}
-            className="invert"
+            className="dark:invert-0 invert" // Adjust logo visibility
             alt="Learn Hub"
           />
-          <span className="font-black text-xl tracking-tighter text-white">
-            Learn<span className="text-amber-500">Hub</span>
+          <span className="font-black text-xl tracking-tighter text-foreground">
+            Learn<span className="text-primary">Hub</span>
           </span>
         </Link>
 
         {/* Desktop Menu */}
         <div className="hidden md:flex items-center gap-1">
           {menu.map((item) => {
-            const isActive =
-              pathname === item.url ||
-              (item.title === "Dashboard" && pathname.startsWith("/dashboard"));
+            const isActive = pathname === item.url;
             return (
               <Link
                 key={item.title}
@@ -91,8 +98,8 @@ const Navbar = ({ className }: NavbarProps) => {
                 className={cn(
                   "px-4 py-2 text-sm font-bold transition-all rounded-full",
                   isActive
-                    ? "text-amber-500 bg-amber-500/10"
-                    : "text-slate-400 hover:text-white hover:bg-white/5",
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent",
                 )}
               >
                 {item.title}
@@ -101,30 +108,53 @@ const Navbar = ({ className }: NavbarProps) => {
           })}
         </div>
 
-        {/* Auth Actions */}
-        <div className="flex items-center gap-3">
+        {/* Actions */}
+        <div className="flex items-center gap-2">
+          {/* Theme Switcher */}
+          {mounted && (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <Sun className="h-[1.2rem] w-[1.2rem] rotate-0 scale-100 transition-all dark:-rotate-90 dark:scale-0" />
+                  <Moon className="absolute h-[1.2rem] w-[1.2rem] rotate-90 scale-0 transition-all dark:rotate-0 dark:scale-100" />
+                  <span className="sr-only">Toggle theme</span>
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => setTheme("light")}>
+                  <Sun className="mr-2 h-4 w-4" /> Light
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("dark")}>
+                  <Moon className="mr-2 h-4 w-4" /> Dark
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setTheme("system")}>
+                  <Monitor className="mr-2 h-4 w-4" /> System
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
+
           {session?.user ? (
-            <div className="flex items-center gap-3">
-              <Avatar className="h-9 w-9 border border-white/10">
+            <div className="flex items-center gap-2">
+              <Avatar className="h-9 w-9 border border-border">
                 <AvatarImage src={session.user.image || ""} />
-                <AvatarFallback className="bg-amber-500/20 text-amber-500">
-                  {session.user.name?.slice(0, 2).toUpperCase()}
+                <AvatarFallback className="bg-primary/20 text-primary uppercase">
+                  {session.user.name?.slice(0, 2)}
                 </AvatarFallback>
               </Avatar>
               <Button
                 variant="ghost"
-                size="sm"
+                size="icon"
                 onClick={() => authClient.signOut()}
-                className="text-slate-400 hover:text-red-400"
+                className="text-muted-foreground hover:text-destructive"
               >
-                <LogOut className="size-4 mr-2" />
-                <span className="hidden lg:inline">Log Out</span>
+                <LogOut className="size-4" />
               </Button>
             </div>
           ) : (
             <Button
               asChild
-              className="bg-amber-500 hover:bg-amber-600 text-black font-bold rounded-full px-6"
+              className="bg-primary hover:opacity-90 text-primary-foreground font-bold rounded-full px-6"
             >
               <Link href="/login">Get Started</Link>
             </Button>
@@ -134,25 +164,24 @@ const Navbar = ({ className }: NavbarProps) => {
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="text-white">
+                <Button variant="ghost" size="icon">
                   <Menu className="size-6" />
                 </Button>
               </SheetTrigger>
               <SheetContent
                 side="right"
-                className="bg-[#020617] border-white/10 text-white p-8"
+                className="bg-background border-border"
               >
-              
                 <div className="flex flex-col gap-6 mt-10">
                   {menu.map((item) => (
                     <Link
                       key={item.title}
                       href={item.url}
                       className={cn(
-                        "text-3xl font-black tracking-tighter",
-                        pathname.startsWith(item.url)
-                          ? "text-amber-500"
-                          : "text-white/40",
+                        "text-3xl font-black tracking-tighter transition-colors",
+                        pathname === item.url
+                          ? "text-primary"
+                          : "text-muted-foreground",
                       )}
                     >
                       {item.title}

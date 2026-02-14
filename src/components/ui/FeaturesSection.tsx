@@ -33,8 +33,8 @@ const features = [
 
 export function FeaturesSection() {
   return (
-    <section className="py-24 bg-background relative overflow-hidden">
-      {/* Subtle Background Glow */}
+    <section className="py-24 bg-background relative overflow-hidden transition-colors duration-500">
+      {/* Subtle Background Glow - Balanced for both modes */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-primary/5 blur-[120px] rounded-full pointer-events-none" />
 
       <div className="container mx-auto px-6 relative z-10">
@@ -46,7 +46,7 @@ export function FeaturesSection() {
             Everything you need <br />
             <span className="text-primary italic">to succeed.</span>
           </h2>
-          <p className="text-foreground/50 text-lg font-medium">
+          <p className="text-muted-foreground text-lg font-medium">
             LearnHub provides the tools for both students and tutors to have a
             seamless, high-impact learning experience.
           </p>
@@ -61,28 +61,28 @@ export function FeaturesSection() {
               transition={{ delay: i * 0.1 }}
               viewport={{ once: true }}
               className={cn(
-                "group relative p-10 rounded-[2.5rem] bg-card border border-border overflow-hidden transition-all duration-500 hover:border-primary/40",
+                "group relative p-10 rounded-[2.5rem] bg-card border border-border overflow-hidden transition-all duration-500 hover:border-primary/40 shadow-sm hover:shadow-xl hover:shadow-primary/5",
                 f.className,
               )}
             >
-              {/* Hover Light Effect */}
-              <div className="absolute -top-24 -right-24 size-48 bg-primary/10 blur-[60px] rounded-full group-hover:bg-primary/20 transition-all duration-500" />
+              {/* Hover Light Effect - Tuned for theme visibility */}
+              <div className="absolute -top-24 -right-24 size-48 bg-primary/10 blur-[60px] rounded-full group-hover:bg-primary/20 transition-all duration-500 pointer-events-none" />
 
               <div className="relative z-10 h-full flex flex-col justify-between">
                 <div>
-                  <div className="size-14 rounded-2xl bg-background border border-border flex items-center justify-center mb-8 group-hover:border-primary/30 transition-colors duration-500">
+                  <div className="size-14 rounded-2xl bg-background border border-border flex items-center justify-center mb-8 group-hover:border-primary/30 group-hover:shadow-lg transition-all duration-500">
                     {f.icon}
                   </div>
                   <h3 className="text-2xl font-black text-foreground mb-3 tracking-tight group-hover:text-primary transition-colors">
                     {f.title}
                   </h3>
-                  <p className="text-foreground/40 text-sm leading-relaxed max-w-[280px]">
+                  <p className="text-muted-foreground text-sm leading-relaxed max-w-[280px]">
                     {f.desc}
                   </p>
                 </div>
 
                 <div className="mt-8 flex justify-end">
-                  <div className="size-10 rounded-full bg-background border border-border flex items-center justify-center text-foreground/20 group-hover:text-primary group-hover:border-primary/50 transition-all">
+                  <div className="size-10 rounded-full bg-background border border-border flex items-center justify-center text-muted-foreground/30 group-hover:text-primary group-hover:border-primary/50 group-hover:scale-110 transition-all">
                     <ArrowUpRight className="size-5" />
                   </div>
                 </div>

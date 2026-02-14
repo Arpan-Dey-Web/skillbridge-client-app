@@ -21,7 +21,25 @@ import Image from "next/image";
 import { CldUploadWidget } from "next-cloudinary";
 import { toast } from "sonner";
 
-// Helper to map day numbers to names
+// Shadcn UI Dialog & Form Components
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 const DAYS_MAP: Record<number, string> = {
   1: "Mon",
   2: "Tue",
@@ -34,49 +52,115 @@ const DAYS_MAP: Record<number, string> = {
 
 export default function TutorSetupPage() {
   const { data: session, isPending: sessionPending } = authClient.useSession();
+
+  // Data States
   const [tutorData, setTutorData] = useState<any>(null);
   const [availability, setAvailability] = useState<any[]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
+
+  // UI States
   const [loading, setLoading] = useState(true);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const [dialogOpen, setDialogOpen] = useState(false);
   const [currentImage, setCurrentImage] = useState("");
 
-  useEffect(() => {
-    const fetchData = async () => {
-      if (session?.user?.id) {
-        setCurrentImage(session.user.image || ""); // সেশন থেকে ইমেজ সেট করা
-        try {
-          const [profileRes, availRes] = await Promise.all([
-            fetch(
-              `${process.env.NEXT_PUBLIC_APP_URL}/api/tutor/profile/${session.user.id}`,
-              { credentials: "include" },
-            ),
-            fetch(
-              `${process.env.NEXT_PUBLIC_APP_URL}/api/tutor/availability/${session.user.id}`,
-              { credentials: "include" },
-            ),
-          ]);
+  // Form State
+  const [formData, setFormData] = useState({
+    bio: "",
+    hourlyRate: 0,
+    categoryId: "",
+  });
 
-          const profileJson = await profileRes.json();
-          const availJson = await availRes.json();
+  // Fetch initial data
+  const fetchData = async () => {
+    if (session?.user?.id) {
+      setCurrentImage(session.user.image || "");
+      try {
+        const [profileRes, availRes, catRes] = await Promise.all([
+          fetch(
+            `${process.env.NEXT_PUBLIC_APP_URL}/api/tutor/profile/${session.user.id}`,
+            {
+              credentials: "include",
+            },
+          ),
+          fetch(
+            `${process.env.NEXT_PUBLIC_APP_URL}/api/tutor/availability/${session.user.id}`,
+            {
+              credentials: "include",
+            },
+          ),
+          fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories`, {
+            credentials: "include",
+          }),
+        ]);
 
-          if (profileJson.success) setTutorData(profileJson.data);
-          if (availJson.success) setAvailability(availJson.data);
-        } catch (error) {
-          console.error("Failed to fetch tutor details", error);
-        } finally {
-          setLoading(false);
+        const profileJson = await profileRes.json();
+        const availJson = await availRes.json();
+        const catJson = await catRes.json();
+
+        if (profileJson.success) {
+          setTutorData(profileJson.data);
+          // Sync form data with profile data
+          setFormData({
+            bio: profileJson.data.bio || "",
+            hourlyRate: profileJson.data.hourlyRate || 0,
+            categoryId: profileJson.data.categoryId || "",
+          });
         }
+        if (availJson.success) setAvailability(availJson.data);
+        if (catJson.success) setCategories(catJson.data || []);
+      } catch (error) {
+        console.error("Failed to fetch tutor details", error);
+        toast.error("Failed to load profile data");
+      } finally {
+        setLoading(false);
       }
-    };
+    }
+  };
 
+  useEffect(() => {
     if (!sessionPending) {
       fetchData();
     }
   }, [session, sessionPending]);
 
-  // ইমেজ আপলোড হ্যান্ডলার
+  // Handle Form Submission
+  const handleUpdateProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!formData.categoryId) return toast.error("Please select a specialty");
+
+    setIsUpdating(true);
+    const toastId = toast.loading("Updating your teaching profile...");
+
+    try {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_APP_URL}/api/tutor/profile`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ ...formData, userId: session?.user?.id }),
+        },
+      );
+
+      if (response.ok) {
+        toast.success("Profile updated successfully!", { id: toastId });
+        setDialogOpen(false);
+        fetchData(); // Refresh page data
+      } else {
+        toast.error("Update failed", { id: toastId });
+      }
+    } catch (error) {
+      toast.error("Something went wrong", { id: toastId });
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  // Image upload handler
   const onUploadSuccess = async (result: any) => {
     const uploadedUrl = result.info.secure_url;
-    setCurrentImage(uploadedUrl); // UI আপডেট
+    setCurrentImage(uploadedUrl);
 
     const { error } = await authClient.updateUser({
       image: uploadedUrl,
@@ -114,11 +198,103 @@ export default function TutorSetupPage() {
             </h1>
           </div>
 
-          <Link href="/dashboard/tutor/set-profile">
-            <Button className="rounded-2xl bg-primary hover:bg-primary/90 text-black font-black px-6 shadow-lg shadow-primary/10">
-              <Edit3 className="mr-2 size-4" /> EDIT DETAILS
-            </Button>
-          </Link>
+          {/* EDIT DIALOG TRIGGER */}
+          <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+            <DialogTrigger asChild>
+              <Button className="rounded-2xl bg-primary hover:bg-primary/90 text-black font-black px-6 shadow-lg shadow-primary/10">
+                <Edit3 className="mr-2 size-4" /> EDIT DETAILS
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="bg-[#020617] border-white/10 text-white max-w-lg rounded-[2.5rem] p-8 shadow-2xl overflow-hidden">
+              <DialogHeader className="space-y-2 mb-4">
+                <DialogTitle className="text-3xl font-black italic tracking-tighter">
+                  Update <span className="text-primary">Identity.</span>
+                </DialogTitle>
+                <p className="text-[10px] text-slate-500 font-black uppercase tracking-widest">
+                  Modify your public teaching credentials
+                </p>
+              </DialogHeader>
+
+              <form onSubmit={handleUpdateProfile} className="space-y-6">
+                {/* SPECIALTY */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Teaching Specialty
+                  </Label>
+                  <Select
+                    value={formData.categoryId}
+                    onValueChange={(val) =>
+                      setFormData({ ...formData, categoryId: val })
+                    }
+                  >
+                    <SelectTrigger className="h-12 bg-white/5 border-white/10 rounded-xl focus:ring-primary/20">
+                      <SelectValue placeholder="Select a subject" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-[#0f172a] border-white/10 text-white">
+                      {categories.map((cat: any) => (
+                        <SelectItem
+                          key={cat.id}
+                          value={cat.id}
+                          className="focus:bg-primary focus:text-black"
+                        >
+                          {cat.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {/* RATE */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Hourly Rate (USD)
+                  </Label>
+                  <div className="relative">
+                    <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-primary" />
+                    <Input
+                      type="number"
+                      value={formData.hourlyRate}
+                      onChange={(e) =>
+                        setFormData({
+                          ...formData,
+                          hourlyRate: Number(e.target.value),
+                        })
+                      }
+                      className="pl-10 h-12 bg-white/5 border-white/10 rounded-xl focus-visible:ring-primary/20"
+                    />
+                  </div>
+                </div>
+
+                {/* BIO */}
+                <div className="space-y-2">
+                  <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                    Professional Bio
+                  </Label>
+                  <Textarea
+                    value={formData.bio}
+                    rows={4}
+                    onChange={(e) =>
+                      setFormData({ ...formData, bio: e.target.value })
+                    }
+                    className="bg-white/5 border-white/10 rounded-xl focus-visible:ring-primary/20 resize-none"
+                    placeholder="Describe your experience..."
+                  />
+                </div>
+
+                <Button
+                  type="submit"
+                  disabled={isUpdating}
+                  className="w-full bg-primary hover:bg-primary/90 text-black font-black h-12 rounded-xl transition-all active:scale-95"
+                >
+                  {isUpdating ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    "SAVE CHANGES"
+                  )}
+                </Button>
+              </form>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="grid gap-8">
@@ -140,9 +316,8 @@ export default function TutorSetupPage() {
                   )}
                 </div>
 
-                {/* Cloudinary Widget */}
                 <CldUploadWidget
-                  uploadPreset="ml_default" // নিশ্চিত করুন এটি Unsigned Preset
+                  uploadPreset="ml_default"
                   onSuccess={onUploadSuccess}
                 >
                   {({ open }) => (

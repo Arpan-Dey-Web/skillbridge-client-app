@@ -28,7 +28,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (session?.user?.role === "ADMIN") {
-      // এই এপিআই-তে আমরা বুকিং, ক্যাটাগরি এবং ইউজারের সামারি ডাটা নিয়ে আসবো
+    
       fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/admin/dashboard-summary`, {
         credentials: "include",
       })

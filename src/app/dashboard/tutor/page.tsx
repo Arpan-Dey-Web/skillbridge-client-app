@@ -27,7 +27,6 @@ export default function TutorDashboard() {
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // ১. সেশন ভ্যালিডেশন এবং রিডাইরেক্ট
   useEffect(() => {
     if (session && session.user?.role === "STUDENT") redirect("/dashboard");
     if (session && session.user?.role === "ADMIN") redirect("/dashboard/admin");

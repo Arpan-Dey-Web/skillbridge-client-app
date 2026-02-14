@@ -68,7 +68,7 @@ export default function StudentBookingsClient({
     if (booking.meetLink) {
       window.open(booking.meetLink, "_blank");
       setSelectedBooking(booking);
-      setIsReviewOpen(true); // জয়েন করার পর রিভিউ বক্স ওপেন হবে
+      setIsReviewOpen(true); 
     }
   };
 

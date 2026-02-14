@@ -15,7 +15,7 @@ import {
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
-// 1. Icon Mapping remains the same
+// 1. Icon Mapping
 const iconMap: Record<string, React.ReactNode> = {
   Physics: <Atom className="size-6" />,
   Chemistry: <Beaker className="size-6" />,
@@ -24,7 +24,7 @@ const iconMap: Record<string, React.ReactNode> = {
   "General Math": <Calculator className="size-6" />,
   Accounting: <BookText className="size-6" />,
   Finance: <TrendingUp className="size-6" />,
-  "Buissness Management": <Briefcase className="size-6" />,
+  "Business Management": <Briefcase className="size-6" />,
   "General Science": <Loader2 className="size-6" />,
   English: <Languages className="size-6" />,
 };
@@ -34,7 +34,7 @@ interface Category {
   name: string;
 }
 
-// 2. Extracted fetcher function for TanStack Query
+// 2. Fetcher function
 const fetchCategories = async (): Promise<Category[]> => {
   const url = `${process.env.NEXT_PUBLIC_APP_URL}/api/categories`;
   const res = await fetch(url);
@@ -56,11 +56,10 @@ export function Categories() {
   } = useQuery({
     queryKey: ["categories"],
     queryFn: fetchCategories,
-    // Optional: staleTime: 1000 * 60 * 5, // Keep data fresh for 5 mins
   });
 
   return (
-    <section className="py-24 bg-background">
+    <section className="py-24 bg-background transition-colors duration-500">
       <div className="container mx-auto px-6">
         {/* Header Section */}
         <div className="mb-16 text-center md:text-left">
@@ -80,12 +79,20 @@ export function Categories() {
           {isLoading ? (
             // 4. Loading state with shadcn Skeletons
             Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-[240px] w-full rounded-xl" />
+              <Skeleton
+                key={i}
+                className="h-[240px] w-full rounded-xl bg-muted"
+              />
             ))
           ) : isError ? (
             // 5. Error state
-            <div className="col-span-full py-10 text-center text-destructive">
-              Failed to load categories. Please try again later.
+            <div className="col-span-full py-20 text-center">
+              <p className="text-destructive font-bold mb-2">
+                Failed to load subjects.
+              </p>
+              <p className="text-muted-foreground text-sm">
+                Please check your connection and try again.
+              </p>
             </div>
           ) : (
             // 6. Data rendering
@@ -96,27 +103,30 @@ export function Categories() {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.05 }}
                 viewport={{ once: true }}
-                className="group relative p-10 rounded-xl bg-card border border-border hover:border-primary/50 transition-all duration-300 cursor-pointer overflow-hidden flex flex-col items-center text-center"
+                className="group relative p-10 rounded-2xl bg-card border border-border hover:border-primary/40 transition-all duration-500 cursor-pointer overflow-hidden flex flex-col items-center text-center shadow-sm hover:shadow-xl hover:shadow-primary/5"
               >
-                <div className="absolute inset-0 bg-gradient-to-b from-primary/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                {/* Adaptive Hover Gradient */}
+                <div className="absolute inset-0 bg-gradient-to-b from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                 <div className="relative z-10 flex flex-col items-center">
-                  <div className="size-16 rounded-2xl bg-background border border-border flex items-center justify-center mb-6 text-foreground group-hover:text-primary group-hover:border-primary/30 group-hover:scale-110 transition-all duration-500 shadow-inner">
+                  {/* Icon Container */}
+                  <div className="size-16 rounded-2xl bg-background border border-border flex items-center justify-center mb-6 text-muted-foreground group-hover:text-primary group-hover:border-primary/30 group-hover:scale-110 transition-all duration-500 shadow-sm">
                     {iconMap[cat.name] || <BookText className="size-7" />}
                   </div>
 
                   <div>
-                    <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors">
+                    <h3 className="text-xl font-bold text-foreground mb-2 group-hover:text-primary transition-colors duration-300">
                       {cat.name}
                     </h3>
-                    <p className="text-xs font-bold text-foreground/40 uppercase tracking-widest group-hover:text-primary/60 transition-colors">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] group-hover:text-primary/70 transition-colors">
                       Find Mentors
                     </p>
                   </div>
                 </div>
 
-                <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <div className="w-8 h-8 border-t-2 border-r-2 border-primary/20 rounded-tr-lg" />
+                {/* Decorative Corner Accent */}
+                <div className="absolute top-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-all duration-500 translate-x-2 -translate-y-2 group-hover:translate-x-0 group-hover:translate-y-0">
+                  <div className="w-8 h-8 border-t-2 border-r-2 border-primary/30 rounded-tr-xl" />
                 </div>
               </motion.div>
             ))

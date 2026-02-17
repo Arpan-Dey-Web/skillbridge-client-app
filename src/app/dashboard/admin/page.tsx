@@ -18,49 +18,34 @@ import { cn } from "@/lib/utils";
 import { authClient } from "@/lib/auth-client";
 import { redirect } from "next/navigation";
 import Link from "next/link";
+import { ExtendedUser } from "@/types/user.types";
 
 export default function AdminDashboard() {
   const { data: session, isPending } = authClient.useSession();
 
-  // Define the type without referencing the live 'session' variable
-  // This avoids the 'possibly null' error during build
-  type ExtendedUser = {
-    id: string;
-    email: string;
-    name: string;
-    role?: string;
-    image?: string | null;
-  };
-
   const user = session?.user as ExtendedUser | undefined;
-
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (user?.role === "ADMIN") {
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/admin/dashboard-summary`, {
+    fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/dashboard-summary`,
+      {
         credentials: "include",
+      },
+    )
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success) setData(json.data);
       })
-        .then((res) => res.json())
-        .then((json) => {
-          if (json.success) setData(json.data);
-        })
-        .catch((err) => console.error("Dashboard Fetch Error:", err))
-        .finally(() => setLoading(false));
-    }
+      .catch((err) => console.error("Dashboard Fetch Error:", err))
+      .finally(() => setLoading(false));
+    // }
   }, [user]);
 
   // Handle Loading State
   if (isPending) return <LoaderScreen />;
 
-  // Auth Guard: If no user or unauthorized role, redirect
-  if (!user || user.role !== "ADMIN") {
-    const destination =
-      user?.role === "TUTOR" ? "/dashboard/tutor" : "/dashboard";
-    redirect(destination);
-    return null;
-  }
   const statsConfig = [
     {
       label: "Platform Users",
@@ -101,7 +86,7 @@ export default function AdminDashboard() {
             System <span className="shimmer-gold">OS</span>
           </h1>
           <p className="text-muted-foreground text-[10px] font-black uppercase tracking-[0.3em] mt-3">
-            Admin: {user.name} | Deployment: Production
+            Admin: {user?.name} | Deployment: Production
           </p>
         </div>
         <div className="flex gap-3">

@@ -65,7 +65,7 @@ export default function AvailabilityPage() {
     queryKey: ["tutor-availability", session?.user?.id],
     queryFn: async () => {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL}/api/tutor/availability/${session?.user?.id}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/tutor/availability/${session?.user?.id}`,
       );
       if (!res.ok) return { success: true, data: [] };
       return res.json();
@@ -93,7 +93,7 @@ export default function AvailabilityPage() {
   const mutation = useMutation({
     mutationFn: async (newSchedule: any) => {
       const response = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL}/api/tutor/availability`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/tutor/availability`,
         {
           method: "PUT",
           headers: { "Content-Type": "application/json" },

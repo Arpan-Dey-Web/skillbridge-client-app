@@ -1,24 +1,6 @@
 "use client";
-
-import {
-  BadgeCheck,
-  Bell,
-  ChevronsUpDown,
-  CreditCard,
-  LogOut,
-  Sparkles,
-} from "lucide-react";
-
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import {
   SidebarMenu,
   SidebarMenuButton,
@@ -32,7 +14,7 @@ export function NavUser({
   user: {
     name: string;
     email: string;
-    avatar: string;
+    image?: string | null;
   };
 }) {
   const { isMobile } = useSidebar();
@@ -45,10 +27,7 @@ export function NavUser({
           className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
         >
           <Avatar className="h-10 w-10 border-2 border-primary/10">
-            <AvatarImage
-              src={user.image || ""}
-              alt={user.name || "User"}
-            />
+            <AvatarImage src={user.image || ""} alt={user.name || "User"} />
             <AvatarFallback className="bg-secondary/20 text-secondary-foreground">
               {user.name?.slice(0, 2).toUpperCase()}
             </AvatarFallback>

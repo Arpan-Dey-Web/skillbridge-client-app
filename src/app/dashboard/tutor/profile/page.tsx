@@ -36,16 +36,9 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CldUploadWidget } from "next-cloudinary";
+import { ExtendedUser } from "@/types/user.types";
 
-// 1. Define the Extended User type for the entire component
-interface ExtendedUser {
-  id: string;
-  email: string;
-  name: string;
-  image?: string | null;
-  role?: string;
-  phone?: string;
-}
+
 
 export default function StudentProfile() {
   const { data: session } = authClient.useSession();

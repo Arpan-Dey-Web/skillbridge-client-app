@@ -35,7 +35,7 @@ export default function AllCategories() {
   const [editingId, setEditingId] = useState<string | null>(null);
 
   const fetchCategories = () => {
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories`)
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/categories`)
       .then((res) => res.json())
       .then((res) => {
         setCategories(res.data || []);
@@ -56,8 +56,8 @@ export default function AllCategories() {
 
     const method = editingId ? "PATCH" : "POST";
     const url = editingId
-      ? `${process.env.NEXT_PUBLIC_APP_URL}/api/categories/${editingId}`
-      : `${process.env.NEXT_PUBLIC_APP_URL}/api/categories`;
+      ? `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/categories/${editingId}`
+      : `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/categories`;
 
     const toastId = toast.loading(
       editingId ? "Updating domain..." : "Initializing domain...",
@@ -92,7 +92,7 @@ export default function AllCategories() {
     const toastId = toast.loading("Purging domain from system...");
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL}/api/categories/${id}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/categories/${id}`,
         {
           method: "DELETE",
           credentials: "include",

@@ -15,6 +15,7 @@ import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { authClient } from "@/lib/auth-client";
 import { redirect } from "next/navigation";
+import { ExtendedUser } from "@/types/user.types";
 
 export default function StudentDashboardClient({
   initialBookings,
@@ -22,10 +23,10 @@ export default function StudentDashboardClient({
   initialBookings: any[];
 }) {
   const { data: session } = authClient.useSession();
-
+  const currentUser = session?.user as ExtendedUser | undefined;
   // Role Protection
-  if (session?.user?.role === "TUTOR") redirect("/dashboard/tutor");
-  if (session?.user?.role === "ADMIN") redirect("/dashboard/admin");
+  if (currentUser?.role === "TUTOR") redirect("/dashboard/tutor");
+  if (currentUser?.role === "ADMIN") redirect("/dashboard/admin");
 
   // Logic Calculations
   const activeBookingsCount = initialBookings.filter(

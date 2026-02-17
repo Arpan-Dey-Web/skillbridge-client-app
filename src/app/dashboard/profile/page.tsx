@@ -1,6 +1,5 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   User,
   Shield,
@@ -16,7 +15,6 @@ import {
   Zap,
   Loader2,
   Save,
-  X,
   Phone,
 } from "lucide-react";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
@@ -37,6 +35,10 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { CldUploadWidget } from "next-cloudinary";
+import { ExtendedUser } from "@/types/user.types";
+
+
+
 
 export default function StudentProfile() {
   const { data: session } = authClient.useSession();
@@ -46,24 +48,28 @@ export default function StudentProfile() {
   const [phone, setPhone] = useState("");
   const [image, setImage] = useState("");
 
+  // 2. Cast the user once here for consistent use
+  const currentUser = session?.user as ExtendedUser | undefined;
+
   useEffect(() => {
-    if (session?.user) {
-      setName(session.user.name || "");
-      setPhone((session.user as any).phone || "");
-      setImage(session.user.image || "");
+    if (currentUser) {
+      setName(currentUser.name || "");
+      setPhone(currentUser.phone || "");
+      setImage(currentUser.image || "");
     }
-  }, [session]);
+  }, [currentUser]);
 
   const handleUpdate = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsPending(true);
 
     try {
+      // 3. Use 'as any' here to bypass the strict InferUserUpdateCtx check
       const { error } = await authClient.updateUser({
         name: name,
         image: image,
         phone: phone,
-      });
+      } as any);
 
       if (error) {
         toast.error(error.message || "Update failed");
@@ -81,9 +87,11 @@ export default function StudentProfile() {
   const onUploadSuccess = async (result: any) => {
     const newImageUrl = result.info.secure_url;
     setImage(newImageUrl);
+
+    // Use 'as any' here as well for safety
     const { error } = await authClient.updateUser({
       image: newImageUrl,
-    });
+    } as any);
 
     if (error) {
       toast.error("Cloud upload success, but profile sync failed.");
@@ -101,12 +109,11 @@ export default function StudentProfile() {
         </div>
 
         <div className="px-10 pb-10 flex flex-col md:flex-row items-end gap-8 -mt-20 relative z-10">
-          {/* PROFILE IMAGE + CLOUDINARY UPLOAD SECTION */}
           <div className="relative group">
             <div className="size-44 rounded-[3rem] bg-background border-[8px] border-background overflow-hidden shadow-2xl relative">
-              {image || session?.user?.image ? (
+              {image || currentUser?.image ? (
                 <Image
-                  src={image || session?.user?.image || ""}
+                  src={image || currentUser?.image || ""}
                   alt="Profile"
                   fill
                   className="object-cover group-hover:scale-110 transition-transform duration-500"
@@ -140,10 +147,11 @@ export default function StudentProfile() {
           <div className="flex-1 pb-2">
             <div className="flex items-center gap-3 mb-3">
               <h1 className="text-5xl font-black text-foreground tracking-tighter italic uppercase leading-none">
-                {session?.user?.name || "Student Name"}
+                {currentUser?.name || "Student Name"}
               </h1>
               <div className="px-3 py-1 bg-amber-500 rounded-lg text-[10px] font-black text-black uppercase tracking-widest mt-1">
-                {session?.user?.role || "STUDENT"}
+                {/* 4. Accessing 'role' via the casted currentUser */}
+                {currentUser?.role || "STUDENT"}
               </div>
             </div>
             <div className="flex flex-wrap gap-6 mt-4">
@@ -157,7 +165,6 @@ export default function StudentProfile() {
             </div>
           </div>
 
-          {/* EDIT PROFILE MODAL */}
           <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
               <Button className="bg-foreground text-background hover:bg-amber-500 hover:text-black font-black rounded-2xl px-8 h-14 transition-all uppercase tracking-widest text-[11px] group">
@@ -263,17 +270,6 @@ export default function StudentProfile() {
                 </span>
               ))}
             </div>
-            <div className="mt-12 pt-8 border-t border-border">
-              <h3 className="text-[10px] font-black text-muted-foreground uppercase tracking-widest mb-4">
-                Current Goal
-              </h3>
-              <div className="p-4 rounded-2xl bg-amber-500/5 border border-amber-500/20 italic">
-                <p className="text-xs text-foreground/80 font-bold leading-relaxed">
-                  "Mastering full-stack architecture and real-time data sync by
-                  late 2026."
-                </p>
-              </div>
-            </div>
           </div>
         </SpotlightCard>
 
@@ -286,18 +282,17 @@ export default function StudentProfile() {
           </div>
           <p className="text-muted-foreground text-sm leading-[1.8] italic mb-10 max-w-2xl">
             Passionate learner currently focusing on mastering Next.js and
-            Physics. Aiming to become a full-stack engineer by late 2026.
-            Focused on high-performance web systems and interactive UI
-            animations.
+            Physics.
           </p>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <InfoTile
               label="Registered Email"
-              value={session?.user?.email || "n/a"}
+              value={currentUser?.email || "n/a"}
             />
+            {/* 5. Accessing 'phone' via the casted currentUser */}
             <InfoTile
               label="Contact Number"
-              value={(session?.user as any)?.phone || "No contact linked"}
+              value={currentUser?.phone || "No contact linked"}
             />
           </div>
         </SpotlightCard>

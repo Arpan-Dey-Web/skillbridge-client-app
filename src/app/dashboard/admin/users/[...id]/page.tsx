@@ -37,7 +37,7 @@ export default function UserDetails() {
 
   useEffect(() => {
     if (userId) {
-      fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/admin/user/${userId}`, {
+      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/user/${userId}`, {
         credentials: "include",
       })
         .then((res) => res.json())
@@ -55,7 +55,7 @@ export default function UserDetails() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/users/${user.id}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/users/${user.id}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

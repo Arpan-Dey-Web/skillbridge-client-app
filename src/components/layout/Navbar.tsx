@@ -24,6 +24,7 @@ import { authClient } from "@/lib/auth-client";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import Image from "next/image";
 import { Roles } from "@/constants/roles";
+import { ExtendedUser } from "@/types/user.types";
 
 const Navbar = ({ className }: { className?: string }) => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -31,31 +32,31 @@ const Navbar = ({ className }: { className?: string }) => {
   const pathname = usePathname();
   const { theme, setTheme } = useTheme();
   const { data: session } = authClient.useSession();
-
+  const currentUser = session?.user as ExtendedUser | undefined;
   // Prevent hydration mismatch
   useEffect(() => setMounted(true), []);
 
-const menu = useMemo(() => {
-  const items = [
-    { title: "Home", url: "/" },
-    { title: "Tutors", url: "/tutors" },
-    { title: "About", url: "/about" },
-  ];
+  const menu = useMemo(() => {
+    const items = [
+      { title: "Home", url: "/" },
+      { title: "Tutors", url: "/tutors" },
+      { title: "About", url: "/about" },
+    ];
 
-  if (session?.user) {
-    let dashboardPath = "/dashboard"; // Default for students
+    // Use the casted currentUser here
+    if (currentUser) {
+      let dashboardPath = "/dashboard";
 
-    // Logic to match your Routes.ts definitions
-    if (session.user.role === Roles.admin) {
-      dashboardPath = "/dashboard/admin";
-    } else if (session.user.role === Roles.tutor) {
-      dashboardPath = "/dashboard/tutor"; 
+      if (currentUser.role === Roles.admin) {
+        dashboardPath = "/dashboard/admin";
+      } else if (currentUser.role === Roles.tutor) {
+        dashboardPath = "/dashboard/tutor";
+      }
+
+      items.push({ title: "Dashboard", url: dashboardPath });
     }
-
-    items.push({ title: "Dashboard", url: dashboardPath });
-  }
-  return items;
-}, [session]);
+    return items;
+  }, [currentUser]);
 
   useEffect(() => {
     const handleScroll = () => setIsScrolled(window.scrollY > 20);
@@ -68,7 +69,7 @@ const menu = useMemo(() => {
       className={cn(
         "fixed top-0 z-50 w-full transition-all duration-500",
         isScrolled ? "pt-4" : "pt-0",
-        className
+        className,
       )}
     >
       <nav
@@ -76,19 +77,20 @@ const menu = useMemo(() => {
           "mx-auto transition-all duration-500 ease-in-out flex items-center justify-between",
           isScrolled
             ? "max-w-5xl rounded-2xl border border-border bg-background/60 backdrop-blur-xl shadow-2xl px-6 py-2"
-            : "w-full max-w-7xl border-b border-border/50 bg-transparent px-8 py-5"
+            : "w-full max-w-7xl border-b border-border/50 bg-transparent px-8 py-5",
         )}
       >
         {/* Logo */}
-        <Link href="/" className="flex items-center gap-1 shrink-0 group">
+        <Link href="/" className="flex items-center gap-2 shrink-0 group">
           <Image
             src="https://res.cloudinary.com/dioe6nj4y/image/upload/v1770392888/leader_jhzssx.png"
-            height={30}
-            width={30}
-            className="dark:invert-0 invert" // Adjust logo visibility
+            height={32} // Adjusted slightly to match common icon scales
+            width={32}
+            className="dark:invert object-contain"
             alt="Learn Hub"
           />
-          <span className="font-black text-xl tracking-tighter text-foreground">
+
+          <span className="font-black text-xl tracking-tighter text-foreground leading-none">
             Learn<span className="text-primary">Hub</span>
           </span>
         </Link>
@@ -105,7 +107,7 @@ const menu = useMemo(() => {
                   "px-4 py-2 text-sm font-bold transition-all rounded-full",
                   isActive
                     ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-accent"
+                    : "text-muted-foreground hover:text-foreground hover:bg-accent",
                 )}
               >
                 {item.title}
@@ -174,7 +176,10 @@ const menu = useMemo(() => {
                   <Menu className="size-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="bg-background border-border">
+              <SheetContent
+                side="right"
+                className="bg-background border-border"
+              >
                 <div className="flex flex-col gap-6 mt-10">
                   {menu.map((item) => (
                     <Link
@@ -182,7 +187,9 @@ const menu = useMemo(() => {
                       href={item.url}
                       className={cn(
                         "text-3xl font-black tracking-tighter transition-colors",
-                        pathname === item.url ? "text-primary" : "text-muted-foreground"
+                        pathname === item.url
+                          ? "text-primary"
+                          : "text-muted-foreground",
                       )}
                     >
                       {item.title}

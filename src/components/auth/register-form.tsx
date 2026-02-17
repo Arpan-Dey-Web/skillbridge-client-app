@@ -70,7 +70,7 @@ export function RegisterForm({
   const handleGoogleLogin = async () => {
     await authClient.signIn.social({
       provider: "google",
-      callbackURL: `${process.env.NEXT_PUBLIC_CLIENT_URL}/`,
+      callbackURL: `${process.env.NEXT_PUBLIC_CLIENT_URL}`,
     });
   };
 
@@ -171,7 +171,7 @@ export function RegisterForm({
                     />
                     {field.state.meta.isTouched && field.state.meta.errors && (
                       <p className="text-destructive text-xs mt-1 font-bold">
-                        {field.state.meta.errors}
+                        {field.state.meta.errors.join(", ")}
                       </p>
                     )}
                   </div>
@@ -194,7 +194,7 @@ export function RegisterForm({
                     />
                     {field.state.meta.isTouched && field.state.meta.errors && (
                       <p className="text-destructive text-xs mt-1 font-bold">
-                        {field.state.meta.errors}
+                        {field.state.meta.errors.join(", ")}
                       </p>
                     )}
                   </div>
@@ -216,7 +216,7 @@ export function RegisterForm({
                     />
                     {field.state.meta.isTouched && field.state.meta.errors && (
                       <p className="text-destructive text-xs mt-1 font-bold">
-                        {field.state.meta.errors}
+                        {field.state.meta.errors.join(", ")}
                       </p>
                     )}
                   </div>
@@ -230,7 +230,7 @@ export function RegisterForm({
                 Create Account <ArrowRight className="size-4 ml-2" />
               </Button>
 
-              <div className="relative py-2">
+              {/* <div className="relative py-2">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-border" />
                 </div>
@@ -239,9 +239,9 @@ export function RegisterForm({
                     Social Register
                   </span>
                 </div>
-              </div>
+              </div> */}
 
-              <Button
+              {/* <Button
                 onClick={() => handleGoogleLogin()}
                 variant="outline"
                 type="button"
@@ -254,7 +254,7 @@ export function RegisterForm({
                   />
                 </svg>
                 Sign up with Google Identity
-              </Button>
+              </Button> */}
 
               <p className="text-center text-sm text-muted-foreground font-medium">
                 Already registered?{" "}

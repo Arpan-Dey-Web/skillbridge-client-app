@@ -76,7 +76,7 @@ export default function StudentBookingsClient({
     setSubmitting(true);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL}/api/reviews`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reviews`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },

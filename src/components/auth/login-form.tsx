@@ -56,7 +56,7 @@ export function LoginForm({
   const handleGoogleLogin = async () => {
     await authClient.signIn.social({
       provider: "google",
-      callbackURL: `${process.env.NEXT_PUBLIC_CLIENT_URL}/`,
+      callbackURL: `${process.env.NEXT_PUBLIC_CLIENT_URL}`,
     });
   };
 
@@ -115,7 +115,11 @@ export function LoginForm({
                       />
                       {isInvalid && (
                         <p className="text-destructive text-xs mt-1 font-bold">
-                          {field?.state?.meta?.errors}
+                          {isInvalid && (
+                            <p className="text-destructive text-xs mt-1 font-bold">
+                              {field.state.meta.errors.join(", ")}
+                            </p>
+                          )}
                         </p>
                       )}
                     </div>
@@ -133,7 +137,6 @@ export function LoginForm({
                         <FieldLabel className="text-xs font-bold text-muted-foreground uppercase tracking-widest">
                           Password
                         </FieldLabel>
-                
                       </div>
                       <Input
                         id="password"
@@ -144,7 +147,7 @@ export function LoginForm({
                       />
                       {isInvalid && (
                         <p className="text-destructive text-xs mt-1 font-bold">
-                          {field.state.meta.errors}
+                          {field.state.meta.errors.join(", ")}
                         </p>
                       )}
                     </div>
@@ -159,7 +162,7 @@ export function LoginForm({
                 Sign In
               </Button>
 
-              <div className="relative py-2">
+              {/* <div className="relative py-2">
                 <div className="absolute inset-0 flex items-center">
                   <span className="w-full border-t border-border" />
                 </div>
@@ -168,9 +171,9 @@ export function LoginForm({
                     Or continue with
                   </span>
                 </div>
-              </div>
+              </div> */}
 
-              <Button
+              {/* <Button
                 onClick={() => handleGoogleLogin()}
                 variant="outline"
                 type="button"
@@ -183,7 +186,7 @@ export function LoginForm({
                   />
                 </svg>
                 Google Account
-              </Button>
+              </Button> */}
 
               <p className="text-center text-sm text-muted-foreground font-medium">
                 New to the platform?{" "}

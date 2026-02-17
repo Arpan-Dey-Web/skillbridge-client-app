@@ -36,7 +36,7 @@ interface Category {
 }
 
 const fetchCategories = async (): Promise<Category[]> => {
-  const url = `${process.env.NEXT_PUBLIC_APP_URL}/api/categories`;
+  const url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/categories`;
   const res = await fetch(url);
   if (!res.ok) throw new Error("Network response was not ok");
   const json = await res.json();

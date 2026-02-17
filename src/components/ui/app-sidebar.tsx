@@ -69,14 +69,13 @@ export function AppSidebar({
   user,
   ...props
 }: {
-  user: { role: string };
+  user: { role: "ADMIN" | "TUTOR" | "STUDENT"; name: string };
 } & React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const router = useRouter();
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
   const { theme, setTheme } = useTheme();
-
   const handleSignOut = async () => {
     await authClient.signOut({
       fetchOptions: {
@@ -87,22 +86,42 @@ export function AppSidebar({
       },
     });
   };
+  const userRole = user?.role?.toUpperCase();
+  const routes = React.useMemo(() => {
+    console.log(user); //  localhost output{ "role": "TUTOR","name": "Jhankar Mahbub" } from dashboard layout but
 
-  let routes: Route[] = [];
-  switch (user.role) {
-    case Roles.admin:
-      routes = adminRoutes;
-      break;
-    case Roles.student:
-      routes = studentRoutes;
-      break;
-    case Roles.tutor:
-      routes = tutorRoutes;
-      break;
-    default:
-      routes = [];
+    if (!userRole) return [];
+    if (userRole === "ADMIN") return adminRoutes;
+    if (userRole === "STUDENT") return studentRoutes;
+    if (userRole === "TUTOR") return tutorRoutes;
+
+    return [];
+  }, [userRole]);
+  // 3. Handle the "Undefined" state visually
+  if (!userRole) {
+    return (
+      <Sidebar className="border-r border-border bg-card" {...props}>
+        <SidebarHeader className="p-6">
+          {/* Keep your Logo/Header here so it doesn't flicker */}
+          <div className="animate-pulse flex items-center gap-3">
+            <div className="size-10 bg-muted rounded-xl" />
+            <div className="h-4 w-24 bg-muted rounded" />
+          </div>
+        </SidebarHeader>
+        <SidebarContent className="px-4">
+          {/* Show a skeleton loader while waiting for user data */}
+          <div className="space-y-4 mt-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="h-10 w-full bg-muted/50 animate-pulse rounded-2xl"
+              />
+            ))}
+          </div>
+        </SidebarContent>
+      </Sidebar>
+    );
   }
-
   return (
     <Sidebar className="border-r border-border bg-card" {...props}>
       <SidebarHeader className="p-6">
@@ -122,7 +141,6 @@ export function AppSidebar({
           </Link>
 
           {/* Theme Toggle */}
-          {/* Theme Switcher */}
           {mounted && (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -149,7 +167,7 @@ export function AppSidebar({
       </SidebarHeader>
 
       <SidebarContent className="px-2 scrollbar-none">
-        {routes.map((group) => (
+        {routes?.map((group) => (
           <SidebarGroup key={group.title} className="py-4">
             <SidebarGroupLabel className="text-muted-foreground uppercase tracking-widest text-[10px] font-black px-4 mb-4">
               {group.title}

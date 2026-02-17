@@ -27,7 +27,7 @@ export function FeaturedTutors() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/tutors`)
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/tutors`)
       .then((res) => res.json())
       .then((res) => {
         if (res.success) setTutors(res.data);

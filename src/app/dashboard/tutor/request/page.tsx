@@ -45,7 +45,7 @@ export default function TutorBookingRequests() {
   const fetchBookings = async () => {
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bookings`,
         {
           credentials: "include",
         },
@@ -80,7 +80,7 @@ export default function TutorBookingRequests() {
     setActionLoading(bookingId);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/approve/${bookingId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bookings/approve/${bookingId}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
@@ -111,7 +111,7 @@ export default function TutorBookingRequests() {
     setRejectLoading(bookingId);
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/${bookingId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bookings/${bookingId}`,
         { method: "DELETE", credentials: "include" },
       );
       if (res.ok) {

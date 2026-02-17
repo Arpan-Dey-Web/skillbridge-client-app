@@ -17,25 +17,22 @@ import { useEffect, useState, useMemo } from "react";
 import Link from "next/link";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { motion } from "framer-motion";
-import { redirect } from "next/navigation";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { ExtendedUser } from "@/types/user.types";
 
 export default function TutorDashboard() {
   const { data: session } = authClient.useSession();
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    if (session && session.user?.role === "STUDENT") redirect("/dashboard");
-    if (session && session.user?.role === "ADMIN") redirect("/dashboard/admin");
-  }, [session]);
+  // 2. Cast the user for type safety during build
+  const currentUser = session?.user as ExtendedUser | undefined;
 
   useEffect(() => {
     const fetchBookings = async () => {
       try {
         const res = await fetch(
-          `${process.env.NEXT_PUBLIC_APP_URL}/api/bookings`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bookings`,
           { credentials: "include" },
         );
         if (res.status === 403) throw new Error("Session invalid");
@@ -94,7 +91,7 @@ export default function TutorDashboard() {
           <h1 className="text-4xl font-black text-foreground tracking-tighter uppercase italic">
             Welcome,{" "}
             <span className="shimmer-gold">
-              {session?.user?.name?.split(" ")[0]}
+              {currentUser?.name?.split(" ")[0]}
             </span>
           </h1>
           <p className="text-muted-foreground font-medium uppercase text-[10px] tracking-[0.2em] mt-2">
@@ -141,12 +138,6 @@ export default function TutorDashboard() {
             <h2 className="text-xl font-black text-foreground uppercase tracking-tighter italic">
               Confirmed <span className="text-amber-500">Sessions</span>
             </h2>
-            <Link
-              href="/dashboard/sessions"
-              className="text-[10px] font-black text-amber-500 hover:text-foreground transition-colors uppercase tracking-[0.2em]"
-            >
-              View All Archives
-            </Link>
           </div>
 
           <div className="space-y-3">

@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "lh3.googleusercontent.com", 
+        hostname: "lh3.googleusercontent.com",
         pathname: "/**",
       },
 
@@ -26,6 +26,16 @@ const nextConfig: NextConfig = {
       },
     ],
   },
+  async rewrites() {
+    return [
+      {
+        source: "/api/auth/:path*",
+        destination: `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/auth/:path*`,
+      },
+    ];
+  },
+
+
 };
 
 export default nextConfig;

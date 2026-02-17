@@ -12,24 +12,17 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-16 mb-20">
           {/* Brand Column */}
           <div className="col-span-1">
-            <Link
-              href="/"
-              className="flex items-center gap-2 shrink-0 group mb-8"
-            >
-              <div className="relative size-8 rounded-lg flex items-center justify-center overflow-hidden transition-transform duration-500 group-hover:rotate-12">
-                <Image
-                  src="https://res.cloudinary.com/dioe6nj4y/image/upload/v1770392888/leader_jhzssx.png"
-                  height={32}
-                  width={32}
-                  className="dark:invert-0 invert transition-all duration-500"
-                  alt="Learn Hub"
-                />
-              </div>
-              <span className="font-black text-2xl tracking-tighter text-foreground uppercase">
-                Learn
-                <span className="text-primary italic font-serif lowercase">
-                  Hub
-                </span>
+            <Link href="/" className="flex items-center gap-2 shrink-0 group">
+              <Image
+                src="https://res.cloudinary.com/dioe6nj4y/image/upload/v1770392888/leader_jhzssx.png"
+                height={32} // Adjusted slightly to match common icon scales
+                width={32}
+                className="dark:invert object-contain"
+                alt="Learn Hub"
+              />
+
+              <span className="font-black text-xl tracking-tighter text-foreground leading-none">
+                Learn<span className="text-primary">Hub</span>
               </span>
             </Link>
 

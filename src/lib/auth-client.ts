@@ -1,19 +1,35 @@
 import { createAuthClient } from "better-auth/react";
 import "better-auth/react";
+
+
 export const authClient = createAuthClient({
-    // Better Auth will look for the base URL in your env
-    baseURL: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:8000"
+    baseURL: typeof window !== "undefined" ? window.location.origin : "",
+    fetchOptions: {
+        credentials: "include",
+    },
+
+    // baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+    // fetchOptions: {
+    //     credentials: "include",
+    // },
 });
 
 
 
 declare module "better-auth/react" {
     interface User {
-        role: "ADMIN" | "TUTOR" | "USER";
-        phone?: string; // Add phone here
+        role: "ADMIN" | "TUTOR" | "STUDENT";
+        phone?: string | null;
+        status: "ACTIVE" | "BANNED";
     }
-    // This part tells the updateUser function to accept phone
-    interface UpdateUserOptions {
-        phone?: string;
+
+    interface Session {
+        user: User;
     }
 }
+
+
+
+export const getSessionFromConsole = createAuthClient({
+    baseURL: process.env.NEXT_PUBLIC_BACKEND_URL, 
+});

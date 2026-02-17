@@ -33,7 +33,7 @@ export default function TotalUsers() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/users/stats`, {
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/stats`, {
       credentials: "include",
     })
       .then((res) => res.json())
@@ -43,7 +43,7 @@ export default function TotalUsers() {
   }, []);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/admin/users`, {
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/users`, {
       credentials: "include",
     })
       .then((res) => res.json())
@@ -62,7 +62,7 @@ export default function TotalUsers() {
 
     try {
       const res = await fetch(
-        `${process.env.NEXT_PUBLIC_APP_URL}/api/admin/users/${userId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/users/${userId}`,
         {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },

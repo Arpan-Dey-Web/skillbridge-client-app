@@ -32,7 +32,6 @@ export interface Category {
   _count: CategoryCount;
 }
 
-
 export interface CategoriesResponse {
   data: Category[];
 }
@@ -54,7 +53,6 @@ export interface Tutor {
   };
 }
 
-
 export interface TutorsResponse {
   success: boolean;
   data: Tutor[];
@@ -67,7 +65,9 @@ export interface TutorsResponse {
 }
 
 const fetchCategories = async (): Promise<Category[]> => {
-  const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories`);
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/categories`,
+  );
   if (!res.ok) throw new Error("Failed to load categories");
   const json = await res.json();
   return json.data;
@@ -75,8 +75,8 @@ const fetchCategories = async (): Promise<Category[]> => {
 
 const fetchTutorsData = async ({ queryKey }: any): Promise<TutorsResponse> => {
   const [_key, { page, search, selectedCategory, maxPrice }] = queryKey;
-  
-  let url = `${process.env.NEXT_PUBLIC_APP_URL}/api/tutors/all`;
+
+  let url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/tutors/all`;
   const params = new URLSearchParams({
     page: page.toString(),
     limit: "10",
@@ -86,14 +86,13 @@ const fetchTutorsData = async ({ queryKey }: any): Promise<TutorsResponse> => {
 
   if (selectedCategory !== "all") {
     // Note: If this endpoint returns a different structure, adjust accordingly
-    url = `${process.env.NEXT_PUBLIC_APP_URL}/api/categories/${selectedCategory}/tutors`;
+    url = `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/categories/${selectedCategory}/tutors`;
   }
 
   const res = await fetch(`${url}?${params.toString()}`);
   if (!res.ok) throw new Error("Failed to fetch tutors");
   return res.json();
 };
-
 
 export default function TutorsPage() {
   const [search, setSearch] = useState("");
@@ -105,7 +104,6 @@ export default function TutorsPage() {
     queryKey: ["categories"],
     queryFn: fetchCategories,
   });
-
 
   const { data: tutorResponse, isLoading: loading } = useQuery<TutorsResponse>({
     queryKey: ["tutors", { page, search, selectedCategory, maxPrice }],

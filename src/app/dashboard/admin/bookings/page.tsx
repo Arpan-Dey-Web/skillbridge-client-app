@@ -20,7 +20,7 @@ export default function Bookings() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/bookings/all`, {
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bookings/all`, {
       credentials: "include",
     })
       .then((res) => res.json())

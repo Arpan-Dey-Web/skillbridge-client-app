@@ -26,53 +26,88 @@ export default function TutorDashboard() {
   const token = session?.session?.token;
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  // 2. Cast the user for type safety during build
   const currentUser = session?.user as ExtendedUser | undefined;
 
+  // State for reviews and stats
+  const [reviewsData, setReviewsData] = useState<{
+    reviews: any[];
+    averageRating: number;
+    totalBookings: number;
+  }>({ reviews: [], averageRating: 0, totalBookings: 0 });
+
   useEffect(() => {
-    const fetchBookings = async () => {
+    const fetchDashboardData = async () => {
+      if (!token) return;
+
       try {
-        const res = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bookings`,
-          {
+        setLoading(true);
+        // Fires both requests simultaneously
+        const [bookingRes, reviewRes] = await Promise.all([
+          fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bookings`, {
             method: "GET",
             headers: {
               "Content-Type": "application/json",
               Authorization: `Bearer ${token}`,
             },
             credentials: "include",
-          },
-        );
-        if (res.status === 403) throw new Error("Session invalid");
-        const data = await res.json();
-        if (data.success) {
-          setBookings(data.data);
+          }),
+          fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reviews`, {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            credentials: "include",
+          }),
+        ]);
+
+        if (bookingRes.status === 403) throw new Error("Session invalid");
+
+        const bData = await bookingRes.json();
+        const rData = await reviewRes.json();
+
+        if (bData.success) {
+          setBookings(bData.data);
+        }
+        if (rData.success) {
+          setReviewsData({
+            reviews: rData.data.reviews || rData.data || [],
+            averageRating: rData.data.averageRating || 0,
+            totalBookings: rData.data.totalBookings || 0,
+          });
         }
       } catch (err: any) {
-        toast.error(err.message);
+        toast.error(err.message || "Failed to sync dashboard data");
       } finally {
         setLoading(false);
       }
     };
 
-    if (session?.user?.id) {
-      fetchBookings();
-    }
-  }, [session]);
+    fetchDashboardData();
+  }, [token]);
 
-  const confirmedBookings = useMemo(() => {
-    return bookings
-      .filter((b) => b.status === "CONFIRMED")
-      .sort(
-        (a, b) =>
-          new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
-      );
-  }, [bookings]);
+const confirmedBookings = useMemo(() => {
+  // Add "COMPLETED" to the filter so past earnings are counted
+  return bookings
+    .filter((b) => b.status === "CONFIRMED" || b.status === "COMPLETED")
+    .sort(
+      (a, b) =>
+        new Date(b.startTime).getTime() - new Date(a.startTime).getTime(),
+    );
+}, [bookings]);
+
+  const calculatedRating = useMemo(() => {
+    const reviews = reviewsData.reviews;
+    if (!reviews || reviews.length === 0) return "0.0";
+    const total = reviews.reduce((acc, curr) => acc + curr.rating, 0);
+    return (total / reviews.length).toFixed(1);
+  }, [reviewsData.reviews]);
 
   const totalRevenue = confirmedBookings.reduce(
-    (acc, curr) => acc + curr.totalPrice,
+    (acc, curr) => acc + (curr.totalPrice || 0),
     0,
   );
+
   const activeStudents = new Set(confirmedBookings.map((b) => b.partnerEmail))
     .size;
 
@@ -127,9 +162,9 @@ export default function TutorDashboard() {
         />
         <StatCard
           title="Rating"
-          value="4.9"
+          value={calculatedRating}
           icon={<Star className="text-amber-500" />}
-          trend="Top 5% Tutor"
+          trend={`${reviewsData.reviews.length} total reviews`}
         />
         <StatCard
           title="Students"
@@ -161,7 +196,7 @@ export default function TutorDashboard() {
                     <div className="flex items-center justify-between p-5">
                       <div className="flex items-center gap-4">
                         <div className="size-12 rounded-2xl bg-secondary dark:bg-amber-500/10 border border-border dark:border-amber-500/20 flex items-center justify-center text-amber-500 font-black text-xl">
-                          {booking.partnerName.charAt(0)}
+                          {booking.partnerName?.charAt(0) || "U"}
                         </div>
                         <div>
                           <h4 className="font-bold text-foreground uppercase tracking-tight">
@@ -173,7 +208,7 @@ export default function TutorDashboard() {
                           <p className="text-[10px] text-muted-foreground flex items-center gap-1.5 mt-0.5 font-black uppercase tracking-widest">
                             <Clock className="size-3 text-amber-500" />
                             {formatDate(booking.startTime)} •{" "}
-                            {booking.timeSlot.split("-")[0]}
+                            {booking.timeSlot?.split("-")[0] || "N/A"}
                           </p>
                         </div>
                       </div>

@@ -11,6 +11,7 @@ import {
   Inbox,
   History,
   ExternalLink,
+  DollarSign,
 } from "lucide-react";
 import { SpotlightCard } from "@/components/ui/spotlight-card";
 import { Button } from "@/components/ui/button";
@@ -40,9 +41,12 @@ export default function TutorBookingRequests() {
   const [meetLinks, setMeetLinks] = useState<{ [key: string]: string }>({});
   const { data: session } = authClient.useSession();
   const token = session?.session?.token;
+
   useEffect(() => {
-    fetchBookings();
-  }, []);
+    if (token) {
+      fetchBookings();
+    }
+  }, [token]);
 
   const fetchBookings = async () => {
     try {
@@ -70,12 +74,15 @@ export default function TutorBookingRequests() {
     return {
       pending: bookings.filter((b) => b.status === "PENDING"),
       upcoming: bookings.filter(
-        (b) => b.status === "CONFIRMED" && !isPast(new Date(b.endTime)),
+        (b) =>
+          b.status === "CONFIRMED" ||
+          (b.status === "APPROVED" && !isPast(new Date(b.endTime))),
       ),
       completed: bookings.filter(
-        (b) => b.status === "COMPLETED" && isPast(new Date(b.endTime)),
+        (b) =>
+          b.status === "COMPLETED" ||
+          (b.status === "CONFIRMED" && isPast(new Date(b.endTime))),
       ),
-      rejected: bookings.filter((b) => b.status === "REJECTED"),
     };
   }, [bookings]);
 
@@ -106,7 +113,7 @@ export default function TutorBookingRequests() {
         setBookings((prev) =>
           prev.map((b) =>
             b.id === bookingId
-              ? { ...b, status: "APPROVED", meetLink: link }
+              ? { ...b, status: "CONFIRMED", meetLink: link }
               : b,
           ),
         );
@@ -146,13 +153,12 @@ export default function TutorBookingRequests() {
   if (loading)
     return (
       <div className="flex h-[400px] w-full items-center justify-center">
-        <Loader2 className="size-8 animate-spin text-primary" />
+        <Loader2 className="size-8 animate-spin text-amber-500" />
       </div>
     );
 
   return (
-    <div className="space-y-8 transition-colors duration-500">
-      {/* Header Section */}
+    <div className="space-y-8">
       <div className="flex flex-col gap-2">
         <h2 className="text-3xl font-black text-foreground tracking-tight uppercase italic">
           Tutor <span className="shimmer-gold">Workspace.</span>
@@ -180,7 +186,7 @@ export default function TutorBookingRequests() {
             value="completed"
             className="rounded-xl data-[state=active]:bg-primary data-[state=active]:text-primary-foreground font-black uppercase text-[10px] tracking-widest px-8 transition-all"
           >
-            History
+            History ({groups.completed.length})
           </TabsTrigger>
         </TabsList>
 
@@ -241,7 +247,7 @@ export default function TutorBookingRequests() {
                 <BookingRow key={booking.id} booking={booking} type="approved">
                   <Button
                     asChild
-                    className="w-full md:w-auto bg-secondary hover:bg-primary hover:text-primary-foreground text-foreground font-black h-12 rounded-xl border border-border transition-all uppercase text-[10px] tracking-widest italic"
+                    className="w-full md:w-auto bg-amber-500 hover:bg-foreground hover:text-background text-black font-black h-12 rounded-xl transition-all uppercase text-[10px] tracking-widest italic"
                   >
                     <a href={booking.meetLink} target="_blank" rel="noreferrer">
                       <ExternalLink className="size-4 mr-2" />
@@ -258,11 +264,12 @@ export default function TutorBookingRequests() {
           {groups.completed.length === 0 ? (
             <EmptyState message="No past sessions recorded." />
           ) : (
-            <div className="grid gap-4 opacity-70">
+            <div className="grid gap-4">
               {groups.completed.map((booking) => (
                 <BookingRow key={booking.id} booking={booking} type="history">
-                  <div className="px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-500 text-[10px] font-black uppercase tracking-widest">
-                    Completed
+                  <div className="flex items-center gap-2 px-4 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-500 text-[10px] font-black uppercase tracking-widest italic">
+                    <DollarSign className="size-3" />
+                    Earned ${booking.totalPrice?.toFixed(2)}
                   </div>
                 </BookingRow>
               ))}
@@ -285,39 +292,41 @@ function BookingRow({ booking, children, type = "pending" }: any) {
       <SpotlightCard className="p-0 border-border overflow-hidden bg-card shadow-sm group">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between p-6 gap-6">
           <div className="flex items-start gap-5">
-            <div
-              className={cn(
-                "size-14 rounded-2xl flex items-center justify-center shrink-0 border transition-colors",
-                type === "pending"
-                  ? "bg-primary/10 border-primary/20 text-primary"
-                  : type === "approved"
-                    ? "bg-blue-500/10 border-blue-500/20 text-blue-500"
-                    : "bg-muted border-border text-muted-foreground",
-              )}
-            >
-              {type === "history" ? (
-                <History className="size-7" />
+            <div className="relative shrink-0">
+              {booking.partnerImage ? (
+                <img
+                  src={booking.partnerImage}
+                  alt={booking.partnerName}
+                  className="size-14 rounded-2xl object-cover border border-border"
+                />
               ) : (
-                <Calendar className="size-7" />
+                <div
+                  className={cn(
+                    "size-14 rounded-2xl flex items-center justify-center border font-black text-xl italic",
+                    type === "pending"
+                      ? "bg-primary/10 text-primary"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
+                  {booking.partnerName?.charAt(0)}
+                </div>
               )}
             </div>
             <div className="space-y-1">
               <h4 className="text-foreground font-black text-xl leading-none italic uppercase tracking-tighter">
-                {booking?.student?.name}
+                {booking.partnerName}
               </h4>
-              <div className="flex flex-wrap gap-4 text-muted-foreground text-[10px] font-black uppercase tracking-widest">
+              <p className="text-[9px] text-muted-foreground font-medium uppercase tracking-tight">
+                {booking.partnerEmail}
+              </p>
+              <div className="flex flex-wrap gap-3 text-muted-foreground text-[10px] font-black uppercase tracking-widest pt-1">
                 <span className="flex items-center gap-1.5 bg-secondary px-2 py-1 rounded-md">
-                  <Clock className="size-3 text-primary" />
-                  {format(new Date(booking.startTime), "MMM d, p")}
+                  <Clock className="size-3 text-amber-500" />
+                  {booking.timeSlot}
                 </span>
                 <span className="flex items-center gap-1.5 bg-secondary px-2 py-1 rounded-md">
-                  <TimerIcon className="size-3" />
-                  {Math.round(
-                    (new Date(booking.endTime).getTime() -
-                      new Date(booking.startTime).getTime()) /
-                      60000,
-                  )}{" "}
-                  MIN
+                  <Calendar className="size-3 text-amber-500" />
+                  {format(new Date(booking.startTime), "MMM d, yyyy")}
                 </span>
               </div>
             </div>
@@ -389,26 +398,5 @@ function EmptyState({ message }: { message: string }) {
         {message}
       </p>
     </motion.div>
-  );
-}
-
-function TimerIcon({ className }: { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      className={className}
-    >
-      <line x1="10" x2="14" y1="2" y2="2" />
-      <line x1="12" x2="15" y1="14" y2="11" />
-      <circle cx="12" cy="14" r="8" />
-    </svg>
   );
 }

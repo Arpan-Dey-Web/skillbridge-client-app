@@ -68,18 +68,18 @@ LearnHub is a full-stack web application that connects learners with expert tuto
 
 ### Public Features
 
-- Browse and search tutors by subject, rating, and price // i implemented from froentend not backend
-- Filter tutors by category // implemented from frontend
+- Browse and search tutors by subject, rating, and price // done
+- Filter tutors by category // done
 - View detailed tutor profiles with reviews // done
-- Landing page with featured tutors // here i have implemented 6 tutor only showed
+- Landing page with featured tutors // done
 
 ### Student Features
 
 - Register and login as student // done
 - Book tutoring sessions //done
-- View upcoming and past bookings // i have implemented all in one page completed and upcoming sessions
+- View upcoming and past bookings // done
 - Leave reviews after sessions //done
-- Manage profile
+- Manage profile //done
 
 ### Tutor Features
 
@@ -87,7 +87,7 @@ LearnHub is a full-stack web application that connects learners with expert tuto
 - Create and update tutor profile //done
 - Set availability slots //done
 - View teaching sessions //done
-- See ratings and reviews
+- See ratings and reviews 
 
 ### Admin Features
 

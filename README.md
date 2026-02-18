@@ -1,446 +1,417 @@
-# LearnHub 🎓
+# 🎓 LearnHub
 
-**"Connect with Expert Tutors, Learn Anything"**
+## A Production-Ready Tutoring Marketplace Platform
 
----
+LearnHub is a scalable, role-based tutoring marketplace built with a modern serverless architecture. The platform connects students with tutors, enables structured booking workflows, and provides secure administrative control.
 
-## Project Overview
-
-LearnHub is a full-stack web application that connects learners with expert tutors. Students can browse tutor profiles, view availability, and book sessions instantly. Tutors can manage their profiles, set availability, and track their teaching sessions. Admins oversee the platform and manage users.
+This project demonstrates full-stack engineering practices including authentication architecture, relational database modeling, serverless deployment, and scalable UI design.
 
 ---
 
-## Roles & Permissions
+# 🚀 Live Demo
 
-| Role        | Description                         | Key Permissions                                                  |
-| ----------- | ----------------------------------- | ---------------------------------------------------------------- |
-| **Student** | Learners who book tutoring sessions | Browse tutors, book sessions, leave reviews, manage profile      |
-| **Tutor**   | Experts who offer tutoring services | Create profile, set availability, view bookings, manage subjects |
-| **Admin**   | Platform moderators                 | Manage all users, view analytics, moderate content               |
-
-> 💡 **Note**: Users select their role during registration.Admin accounts should be seeded in the database.
+🔗 https://skillbridge-client-app.vercel.app/
 
 ---
 
-## ⚠️ Mandatory Requirements
+# 🔐 Demo Credentials
 
-> [!CAUTION]
-> **MANDATORY - READ CAREFULLY**
->
-> The following **FIVE requirements are MANDATORY**:
->
-> 1. **Homepage** - 4 meaningful sections + Navbar + Footer
-> 2. **UI/UX** - Clean, responsive design with consistent colors & spacing
-> 3. **Commits** - 30 meaningful commits (15 frontend + 15 backend)
-> 4. **Error Handling** - Validation, error messages, loading states
-> 5. **Admin Credentials** - Provide working admin email & password
->
-> ❌ **Failure to complete any of these = 0 MARKS**
+## 🛡️ Admin
 
----
+```
+Email: admin@gmail.com
+Password: 12345678
+```
 
-## 🛠️ Tech Stack
+## 👨‍🏫 Tutor
 
-### Frontend
+```
+Email: jk@gmail.com
+Password: 12345678
+```
 
-| Technology   | Purpose                        |
-| ------------ | ------------------------------ |
-| Next.js      | App Router, SSR/SSG            |
-| TypeScript   | Type safety                    |
-| Tailwind CSS | Styling (or any CSS framework) |
+## 👨‍🎓 Student
 
-### Backend
+```
+Email: student@gmail.com
+Password: 12345678
+```
 
-| Technology        | Purpose  |
-| ----------------- | -------- |
-| Node.js + Express | REST API |
-| Postgres + Prisma | Database |
-
-### Deployment
-
-| Service       | Purpose                       |
-| ------------- | ----------------------------- |
-| Vercel/Render | Frontend & Backend deployment |
+> These accounts are seeded for evaluation purposes.
 
 ---
 
-## Features
+# 🏗 Tech Stack
 
-### Public Features
+## Frontend
 
-- Browse and search tutors by subject, rating, and price // done
-- Filter tutors by category // done
-- View detailed tutor profiles with reviews // done
-- Landing page with featured tutors // done
+- Next.js 16 (Latest Version)
+- TypeScript
+- Tailwind CSS
+- shadcn/ui
+- TanStack Query
+- Better Auth (Client)
 
-### Student Features
+## Backend
 
-- Register and login as student // done
-- Book tutoring sessions //done
-- View upcoming and past bookings // done
-- Leave reviews after sessions //done
-- Manage profile //done
+- Node.js
+- Express.js
+- Vercel Serverless API Routes
+- Prisma ORM
+- PostgreSQL (NeonDB)
+- Better Auth (Server)
 
-### Tutor Features
+---
 
-- Register and login as tutor //done
-- Create and update tutor profile //done
-- Set availability slots //done
-- View teaching sessions //done
-- See ratings and reviews 
+# 🔐 Authentication & Authorization
 
-### Admin Features
+- Secure session-based authentication using Better Auth
+- HTTP-only cookie sessions
+- Role-based access control (RBAC)
+- Middleware-protected routes
+- Admin route isolation
 
-- View all users (students and tutors) //done
-- Manage user status (ban/unban)
-- View all bookings //done
+### Roles
+
+- STUDENT
+- TUTOR
+- ADMIN
+
+---
+
+# ✨ Key Features
+
+## 👨‍🎓 Student Features
+
+- Smart search & filtering
+- Instant booking system
+- Review submission after completed sessions
+- Dashboard with booking history
+- Profile management
+
+## 👨‍🏫 Tutor Features
+
+- Profile customization
+- Hourly rate management
+- Availability slot creation
+- Session tracking
+- Ratings overview
+
+## 🛡️ Admin Features
+
+- View all users
+- Ban / Unban accounts
 - Manage categories
+- View all bookings
 
 ---
 
-## Pages & Routes
+# 🗄 Database Schema Overview
 
-> ⚠️ **Note**: These routes are examples. You may add, edit, or remove routes based on your implementation needs.
+LearnHub uses **PostgreSQL (NeonDB)** with **Prisma ORM** to maintain strict relational integrity, role-based access, and authentication session management.
 
-### Public Routes
-
-| Route         | Page          | Description                   |
-| ------------- | ------------- | ----------------------------- |
-| `/`           | Home          | Hero, search, featured tutors |
-| `/tutors`     | Browse Tutors | List with filters             |
-| `/tutors/:id` | Tutor Profile | Details, reviews, book        |
-| `/login`      | Login         | Login form                    |
-| `/register`   | Register      | Registration form             |
-
-### Student Routes (Private)
-
-| Route                 | Page        | Description        |
-| --------------------- | ----------- | ------------------ |
-| `/dashboard`          | Dashboard   | Overview, bookings |
-| `/dashboard/bookings` | My Bookings | Booking history    |
-| `/dashboard/profile`  | Profile     | Edit info          |
-
-### Tutor Routes (Private)
-
-| Route                 | Page         | Description     |
-| --------------------- | ------------ | --------------- |
-| `/tutor/dashboard`    | Dashboard    | Sessions, stats |
-| `/tutor/availability` | Availability | Set time slots  |
-| `/tutor/profile`      | Profile      | Edit tutor info |
-
-### Admin Routes (Private)
-
-| Route               | Page       | Description       |
-| ------------------- | ---------- | ----------------- |
-| `/admin`            | Dashboard  | Statistics        |
-| `/admin/users`      | Users      | Manage users      |
-| `/admin/bookings`   | Bookings   | All bookings      |
-| `/admin/categories` | Categories | Manage categories |
+🔗 Full ER Diagram (DrawSQL):  
+https://drawsql.app/teams/arpan-dey-workspace/diagrams/learnhub-app-database-schema-design
 
 ---
 
-## Database Tables
+# 🔐 Authentication & Session Models (Better Auth)
 
-Design your own schema for the following tables:
+## User
+Primary entity representing all platform users.
 
-- **Users** - Store user information and authentication details
-- **TutorProfiles** - Tutor-specific information (linked to Users)
-- **Categories** - Subject categories for tutoring
-- **Bookings** - Session bookings between students and tutors
-- **Reviews** - Student reviews for tutors
+- `id` – String (Primary Key)
+- `email` – Unique email
+- `name` – Optional full name
+- `phone` – Optional phone
+- `image` – Profile image URL
+- `emailVerified` – Boolean
+- `role` – Enum (STUDENT | TUTOR | ADMIN)
+- `status` – Enum (ACTIVE | BANNED)
+- `createdAt`
+- `updatedAt`
 
-> 💡 _Think about what fields each table needs based on the features above._
-
----
-
-## API Endpoints
-
-> ⚠️ **Note**: These endpoints are examples. You may add, edit, or remove endpoints based on your implementation needs.
-
-### Authentication
-
-| Method | Endpoint             | Description       |
-| ------ | -------------------- | ----------------- |
-| POST   | `/api/auth/register` | Register new user |
-| POST   | `/api/auth/login`    | Login user        |
-| GET    | `/api/auth/me`       | Get current user  |
-
-### Tutors (Public)
-
-| Method | Endpoint          | Description                 |
-| ------ | ----------------- | --------------------------- |
-| GET    | `/api/tutors`     | Get all tutors with filters |
-| GET    | `/api/tutors/:id` | Get tutor details           |
-| GET    | `/api/categories` | Get all categories          |
-
-### Bookings
-
-| Method | Endpoint            | Description         |
-| ------ | ------------------- | ------------------- |
-| POST   | `/api/bookings`     | Create new booking  |
-| GET    | `/api/bookings`     | Get user's bookings |
-| GET    | `/api/bookings/:id` | Get booking details |
-
-### Tutor Management
-
-| Method | Endpoint                  | Description          |
-| ------ | ------------------------- | -------------------- |
-| PUT    | `/api/tutor/profile`      | Update tutor profile |
-| PUT    | `/api/tutor/availability` | Update availability  |
-
-### Reviews
-
-| Method | Endpoint       | Description   |
-| ------ | -------------- | ------------- |
-| POST   | `/api/reviews` | Create review |
-
-### Admin
-
-| Method | Endpoint               | Description        |
-| ------ | ---------------------- | ------------------ |
-| GET    | `/api/admin/users`     | Get all users      |
-| PATCH  | `/api/admin/users/:id` | Update user status |
+### Relations
+- One-to-One → TutorProfile
+- One-to-Many → Booking (as student)
+- One-to-Many → Review
+- One-to-Many → Session
+- One-to-Many → Account
 
 ---
 
-## Flow Diagrams
+## Session
+Stores authenticated session data.
 
-### 👨‍🎓 Student Journey
+- `id`
+- `token` (Unique)
+- `expiresAt`
+- `ipAddress`
+- `userAgent`
+- `userId` → FK → User
+
+---
+
+## Account
+Handles provider-based authentication (Better Auth support).
+
+- `id`
+- `providerId`
+- `accountId`
+- `accessToken`
+- `refreshToken`
+- `password` (if credentials-based)
+- `userId` → FK → User
+
+---
+
+## Verification
+Stores email verification / token-based flows.
+
+- `id`
+- `identifier`
+- `value`
+- `expiresAt`
+
+---
+
+# 🎓 Core Domain Models
+
+## Category
+Defines tutoring subject categories.
+
+- `id` (UUID)
+- `name` (Unique)
+
+### Relations
+- One-to-Many → TutorProfile
+
+---
+
+## TutorProfile
+Extends User with tutor-specific data.
+
+- `id` (UUID)
+- `bio` (Text)
+- `hourlyRate`
+- `averageRating`
+- `userId` (Unique FK → User)
+- `categoryId` (FK → Category)
+
+### Relations
+- One-to-One → User
+- One-to-Many → Availability
+- One-to-Many → Booking
+
+---
+
+## Availability
+Stores recurring weekly time slots.
+
+- `id` (UUID)
+- `dayOfWeek` (0–6)
+- `startTime` (String)
+- `endTime` (String)
+- `tutorProfileId` → FK → TutorProfile
+
+---
+
+## Booking
+Represents a tutoring session between student and tutor.
+
+- `id` (UUID)
+- `startTime`
+- `endTime`
+- `duration`
+- `totalPrice`
+- `status` (PENDING | CONFIRMED | COMPLETED | CANCELLED)
+- `meetLink`
+- `studentId` → FK → User
+- `tutorProfileId` → FK → TutorProfile
+- `createdAt`
+
+### Relations
+- Many-to-One → User (Student)
+- Many-to-One → TutorProfile
+- One-to-One → Review
+
+---
+
+## Review
+Stores verified student feedback.
+
+- `id` (UUID)
+- `rating` (Integer)
+- `comment` (Text)
+- `bookingId` (Unique FK → Booking)
+- `studentId` → FK → User
+- `createdAt`
+
+### Design Constraint
+- A review is linked to a specific booking.
+- One booking can only have one review.
+- Only verified students can leave feedback.
+
+---
+
+# 📊 Booking Status Flow
 
 ```
-                              ┌──────────────┐
-                              │   Register   │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │Browse Tutors │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │ View Profile │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │ Book Session │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │    Attend    │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │ Leave Review │
-                              └──────────────┘
-```
-
-### 👨‍🏫 Tutor Journey
-
-```
-                              ┌──────────────┐
-                              │   Register   │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │Create Profile│
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │    Set       │
-                              │ Availability │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │View Sessions │
-                              └──────────────┘
-                                     │
-                                     ▼
-                              ┌──────────────┐
-                              │Mark Complete │
-                              └──────────────┘
-```
-
-### 📊 Booking Status
-
-```
-                              ┌──────────────┐
-                              │  CONFIRMED   │
-                              │   (instant)  │
-                              └──────────────┘
-                               /            \
-                              /              \
-                       (tutor)          (student)
-                        marks            cancels
-                            /                \
-                           ▼                  ▼
-                   ┌──────────────┐   ┌──────────────┐
-                   │  COMPLETED   │   │  CANCELLED   │
-                   └──────────────┘   └──────────────┘
+PENDING → CONFIRMED → COMPLETED
+       ↘
+        CANCELLED
 ```
 
 ---
 
-## Submission
+# 🔎 Schema Design Highlights
 
-📋 **See [README.md](./README.md) for submission guidelines, timeline, and marks.**
+- ✅ Strict relational integrity via foreign keys
+- ✅ Unique constraint on TutorProfile per user
+- ✅ One review per booking (verified feedback enforcement)
+- ✅ Role-based access controlled at application layer
+- ✅ Authentication session persistence
+- ✅ Normalized relational schema
+- ✅ Enum-based state management
 
-text : #2D3748
-background: #FFFFFF
-primary: #10B981
-secondary: #D8B4FE
-accent: #ECFDF5
+---
 
-## Still Have To Do !!!
+# 🧠 Architectural Strengths
 
-1. রেটিং ও রিভিউ:
-   ইমপ্রুভমেন্ট: টিউটর যেন তার রিভিউগুলোতে "Reply" দিতে পারে এমন ফিচার যোগ করলে প্ল্যাটফর্মটি আরও ইন্টারঅ্যাক্টিভ হবে।
+- Clear separation between authentication models and domain models
+- Scalable availability modeling
+- Extensible booking lifecycle
+- Enforced review authenticity via booking relation
+- Serverless-compatible PostgreSQL design
 
-2. Email Notifications: বুকিং যখন স্টুডেন্ট রিকোয়েস্ট করবে, তখন টিউটরকে ইমেইল পাঠানো এবং টিউটর যখন 'Approve' করবে, তখন মিটিং লিঙ্কসহ স্টুডেন্টকে ইমেইল পাঠানো (Nodemailer বা Resend ব্যবহার করে)। এটি একটি রিয়েল-লাইফ প্রজেক্টের জন্য অত্যন্ত জরুরি।
 
-# Admin bookings button need improvement
+# 📡 API Structure
 
-```
-১. Session Logs (The Audit Trail)
-এটি মূলত একটি Read-only History। যখন কোনো বুকিং নিয়ে বিতর্ক তৈরি হয় (যেমন: টিউটর জয়েন করেনি বা স্টুডেন্ট পেমেন্ট নিয়ে কমপ্লেন করেছে), তখন অ্যাডমিন এখান থেকে সব টেকনিক্যাল ডাটা দেখতে পায়।
-Timeline: বুকিংটি কখন তৈরি হয়েছে, কখন পেমেন্ট হয়েছে এবং কখন স্ট্যাটাস চেঞ্জ হয়েছে তার একটি টাইমলাইন।
-Meeting Info: মিটিংয়ের লিংকটি জেনারেট হয়েছে কি না এবং কোনো পাসকোড ছিল কি না।
-Participants Details: স্টুডেন্ট এবং টিউটরের আইডি এবং তাদের কন্টাক্ট ইনফো।
-System Notes: কোনো অটোমেটেড অ্যাকশন (যেমন: "Session automatically marked as completed after 24 hours")।
-
-২. Manage (The Action Center)
-এটি অ্যাডমিনকে ওই নির্দিষ্ট বুকিংয়ের ওপর Full Power দেয়। এখানে ক্লিক করলে একটি Sheet বা Modal ওপেন হতে পারে যেখানে নিচের কাজগুলো করা যাবে:
-Change Status: আপনি চাইলে ম্যানুয়ালি কোনো বুকিংকে COMPLETED থেকে CANCELLED বা REFUNDED এ চেঞ্জ করতে পারবেন।
-Refund Trigger: যদি সেশনটি খারাপ হয় বা টিউটর না আসে, অ্যাডমিন এখান থেকে রিফান্ড প্রসেস শুরু করতে পারবে।
-Update Meeting Link: যদি আগের লিংকটি কাজ না করে, অ্যাডমিন নতুন একটি meetLink আপডেট করে দিতে পারবে।
-Admin Note: ওই বুকিং সম্পর্কে কোনো ইন্টারনাল নোট লিখে রাখা (যা ইউজাররা দেখবে না)।
+## Authentication
 
 ```
-
-## implementation guideline
-
-```
-r ekbr bolen bhaiya
-color?
-detail show krote paren
-or validation
-
-session cencel korte paren
-or teacher change korte paren
-
-time change korte paren
-je teacher er problem ace so time change kore student ke janay dilen
-dekhen ja valo hoy
-
-
-mange button na rakhlei hoy
-
-
-rounded besi hoye gece
-card er
-pointer dekhi na apnk
-mouse pointer
-
-
-table er rounded besi hoye gece
-ager page er
-user er
-rouded same den sob gular
-otherwise thik ace
-rakhte paren
-
-
-r ekbr login koren to
-logout kore
-jii
-wait
-google page a website name skillbridge dekhaitece
-ji
-
-
-thik ace
-live link dian
-
-
-
-
-ok bhai
-bolen
-bhai re bhai
-link peye
-
-
-set profile keno?
-jii korte paren
-eksathe combine koren
-
-
-na eita thik ace
-overall good
-thik ace
-
-slider use korte paren
-jii
-thik ace
-na lagbe na
-image add korte paren
-bg te
-thik ace
-
-
-useMemo use koren
-useMemo use koren thik hoye jabe
-wait apnk ekta jinis dei
-
-
-review show korate paren
-tastimony
-top student
-why student come here
-what you offer
-
-
-agulai enough
-jii
-r kicu lagbe na
-jii
-comment type?
-pera ace email a
-
-
-karon kw jdi valid email diye  login na kore thle tar email kibhabe paben?
-thle
-ascha thle overall thik ace
-agulai implement koren
-r lagbe na
-
-
-agula kore submit den
-oita dekhen age
-nah
-
-
-change kroen
-koren
-primary ta use korte paren
-eto color na kroe
-kore
-ascha thle thik ace
-
-
-overall nice
-great work
-
-
-time thakle alada korian
-mara khaben code check korte gele
-
+POST   /api/auth/register
+POST   /api/auth/login
+GET    /api/auth/me
 ```
 
-npm run lint
+## Tutors
+
+```
+GET    /api/tutors
+GET    /api/tutors/:id
+```
+
+## Bookings
+
+```
+POST   /api/bookings
+GET    /api/bookings
+PATCH  /api/bookings/:id
+```
+
+## Admin
+
+```
+GET    /api/admin/users
+PATCH  /api/admin/users/:id
+```
+
+---
+
+# ⚠️ Error Handling & UX
+
+## Backend
+
+- Zod validation
+- Centralized error middleware
+- Proper HTTP status codes
+
+## Frontend
+
+- TanStack Query loading states
+- Skeleton components
+- Toast notifications
+- Form validation feedback
+
+---
+
+# ⚡ Performance Optimizations
+
+- Server-side rendering (SSR)
+- Query caching via TanStack Query
+- Optimized Prisma queries
+- Lazy-loaded components
+- Serverless auto-scaling
+
+---
+
+# 🛠 Local Setup
+
+## 1️⃣ Clone Repository
+
+```
+git clone https://github.com/yourusername/learnhub.git
+cd learnhub
+```
+
+## 2️⃣ Environment Variables
+
+Create `.env` file:
+
+```
+DATABASE_URL=Your Database URL
+BETTER_AUTH_SECRET=Better auth Secret
+NEXT_PUBLIC_CLIENT_URL=Your frontend url
+NEXT_PUBLIC_BACKEND_URL=Your backend url
+```
+
+## 3️⃣ Install Dependencies
+
+```
+npm install
+```
+
+## 4️⃣ Prisma Setup
+
+```
+npx prisma generate
+npx prisma migrate dev
+```
+
+## 5️⃣ Run Development Server
+
+```
+npm run dev
+```
+
+---
+
+# 🛡 Security Measures
+
+- Server-side session verification
+- Role-based middleware enforcement
+- Banned-user restriction
+- Environment variable protection
+- Verified reviews linked to bookings
+
+---
+
+# 📈 Future Improvements
+
+- Payment integration
+- Real-time chat
+- Email notifications
+- Calendar sync
+- Advanced filtering & pagination
+- Analytics dashboard
+
+---
+
+# 👨‍💻 Author
+
+Arpan Dey  
+Full Stack Developer
+
+GitHub: https://github.com/Arpan-Dey-Web  
+Portfolio: https://arpandeyweb.vercel.app

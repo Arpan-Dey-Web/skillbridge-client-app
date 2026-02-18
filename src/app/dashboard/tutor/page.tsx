@@ -23,6 +23,7 @@ import { ExtendedUser } from "@/types/user.types";
 
 export default function TutorDashboard() {
   const { data: session } = authClient.useSession();
+  const token = session?.session?.token;
   const [bookings, setBookings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   // 2. Cast the user for type safety during build
@@ -33,7 +34,14 @@ export default function TutorDashboard() {
       try {
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bookings`,
-          { credentials: "include" },
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            credentials: "include",
+          },
         );
         if (res.status === 403) throw new Error("Session invalid");
         const data = await res.json();

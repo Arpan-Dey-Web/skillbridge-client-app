@@ -7,14 +7,12 @@ export const authClient = createAuthClient({
     fetchOptions: {
         credentials: "include",
     },
-
-    // baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
-    // fetchOptions: {
-    //     credentials: "include",
-    // },
 });
 
-
+// baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
+// fetchOptions: {
+//     credentials: "include",
+// },
 
 declare module "better-auth/react" {
     interface User {
@@ -32,4 +30,7 @@ declare module "better-auth/react" {
 
 export const getSessionFromConsole = createAuthClient({
     baseURL: process.env.NEXT_PUBLIC_BACKEND_URL, 
+    fetchOptions: {
+        credentials: "include",
+    },
 });

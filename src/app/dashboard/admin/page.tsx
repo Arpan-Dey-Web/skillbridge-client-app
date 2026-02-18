@@ -22,7 +22,7 @@ import { ExtendedUser } from "@/types/user.types";
 
 export default function AdminDashboard() {
   const { data: session, isPending } = authClient.useSession();
-
+  const token = session?.session?.token;
   const user = session?.user as ExtendedUser | undefined;
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -31,7 +31,11 @@ export default function AdminDashboard() {
     fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/dashboard-summary`,
       {
-        credentials: "include",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include", // Ensure cookies are sent with the request
       },
     )
       .then((res) => res.json())

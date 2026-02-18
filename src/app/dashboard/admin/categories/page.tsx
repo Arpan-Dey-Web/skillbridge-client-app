@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { getSessionFromConsole } from "@/lib/auth-client";
 
 export default function AllCategories() {
   const [categories, setCategories] = useState<any[]>([]);
@@ -33,9 +34,17 @@ export default function AllCategories() {
   const [open, setOpen] = useState(false);
   const [categoryName, setCategoryName] = useState("");
   const [editingId, setEditingId] = useState<string | null>(null);
-
+  const { data: sessionData } = getSessionFromConsole.useSession();
+  const token = sessionData?.session?.token;
   const fetchCategories = () => {
-    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/categories`)
+    fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/categories`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      credentials: "include",
+    })
       .then((res) => res.json())
       .then((res) => {
         setCategories(res.data || []);
@@ -66,7 +75,10 @@ export default function AllCategories() {
     try {
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ name: categoryName }),
         credentials: "include",
       });
@@ -95,6 +107,10 @@ export default function AllCategories() {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/categories/${id}`,
         {
           method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           credentials: "include",
         },
       );

@@ -59,6 +59,7 @@ const DAYS = [
 export default function AvailabilityPage() {
   const queryClient = useQueryClient();
   const { data: session } = authClient.useSession();
+  const token = session?.session?.token;
   const [schedule, setSchedule] = useState<{ [key: number]: string[] }>({});
 
   const { data: serverResponse, isLoading: isFetching } = useQuery({
@@ -66,6 +67,14 @@ export default function AvailabilityPage() {
     queryFn: async () => {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/tutor/availability/${session?.user?.id}`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        },
       );
       if (!res.ok) return { success: true, data: [] };
       return res.json();
@@ -96,7 +105,10 @@ export default function AvailabilityPage() {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/tutor/availability`,
         {
           method: "PUT",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           credentials: "include",
           body: JSON.stringify({ schedule: newSchedule }),
         },

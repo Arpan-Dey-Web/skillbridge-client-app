@@ -26,14 +26,22 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import Link from "next/link";
+import { getSessionFromConsole } from "@/lib/auth-client";
 
 export default function TotalUsers() {
   const [stats, setStats] = useState<any>(null);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const { data: sessionData } = getSessionFromConsole.useSession();
+  const token = sessionData?.session?.token;
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/users/stats`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       credentials: "include",
     })
       .then((res) => res.json())
@@ -44,6 +52,11 @@ export default function TotalUsers() {
 
   useEffect(() => {
     fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/users`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
       credentials: "include",
     })
       .then((res) => res.json())
@@ -65,7 +78,10 @@ export default function TotalUsers() {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/users/${userId}`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           credentials: "include",
           body: JSON.stringify({ status: newStatus }),
         },

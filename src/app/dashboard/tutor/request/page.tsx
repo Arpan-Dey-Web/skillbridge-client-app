@@ -30,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { format, isPast } from "date-fns";
 import { cn } from "@/lib/utils";
+import { authClient } from "@/lib/auth-client";
 
 export default function TutorBookingRequests() {
   const [bookings, setBookings] = useState<any[]>([]);
@@ -37,7 +38,8 @@ export default function TutorBookingRequests() {
   const [actionLoading, setActionLoading] = useState<string | null>(null);
   const [rejectLoading, setRejectLoading] = useState<string | null>(null);
   const [meetLinks, setMeetLinks] = useState<{ [key: string]: string }>({});
-
+  const { data: session } = authClient.useSession();
+  const token = session?.session?.token;
   useEffect(() => {
     fetchBookings();
   }, []);
@@ -47,6 +49,11 @@ export default function TutorBookingRequests() {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bookings`,
         {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           credentials: "include",
         },
       );
@@ -63,11 +70,12 @@ export default function TutorBookingRequests() {
     return {
       pending: bookings.filter((b) => b.status === "PENDING"),
       upcoming: bookings.filter(
-        (b) => b.status === "APPROVED" && !isPast(new Date(b.endTime)),
+        (b) => b.status === "CONFIRMED" && !isPast(new Date(b.endTime)),
       ),
       completed: bookings.filter(
-        (b) => b.status === "APPROVED" && isPast(new Date(b.endTime)),
+        (b) => b.status === "COMPLETED" && isPast(new Date(b.endTime)),
       ),
+      rejected: bookings.filter((b) => b.status === "REJECTED"),
     };
   }, [bookings]);
 
@@ -83,7 +91,10 @@ export default function TutorBookingRequests() {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bookings/approve/${bookingId}`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           credentials: "include",
           body: JSON.stringify({ meetLink: link }),
         },
@@ -112,7 +123,14 @@ export default function TutorBookingRequests() {
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bookings/${bookingId}`,
-        { method: "DELETE", credentials: "include" },
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          credentials: "include",
+        },
       );
       if (res.ok) {
         toast.success("Request Removed");

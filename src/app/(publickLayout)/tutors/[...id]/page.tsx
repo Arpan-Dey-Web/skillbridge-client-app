@@ -98,7 +98,8 @@ export default function TutorProfilePage() {
   const [selectedSlot, setSelectedSlot] = useState<Availability | null>(null);
   const [duration, setDuration] = useState<number>(15);
   const [hasBookedToday, setHasBookedToday] = useState<boolean>(false);
-
+  const { data: sessionData } = authClient.useSession();
+  const token = sessionData?.session?.token;
   const durations = [5, 10, 15, 30];
 
   const dhakaContext = useMemo(() => {
@@ -130,7 +131,14 @@ export default function TutorProfilePage() {
 
   useEffect(() => {
     if (tutorId) {
-      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/tutors/${tutorId}`)
+      fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/tutors/${tutorId}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        credentials: "include",
+      })
         .then((res) => res.json())
         .then((res) => {
           if (res.success) {
@@ -176,7 +184,10 @@ export default function TutorProfilePage() {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/bookings`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           credentials: "include",
           body: JSON.stringify({
             tutorProfileId: tutor.id,

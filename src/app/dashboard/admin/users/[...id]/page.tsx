@@ -25,12 +25,15 @@ import { format } from "date-fns";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
+import { getSessionFromConsole } from "@/lib/auth-client";
 
 export default function UserDetails() {
   const [user, setUser] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const params = useParams();
+  const { data: sessionData } = getSessionFromConsole.useSession();
+  const token = sessionData?.session?.token;
   const userId = Array.isArray(params?.id)
     ? params.id[params.id.length - 1]
     : params?.id;
@@ -38,6 +41,10 @@ export default function UserDetails() {
   useEffect(() => {
     if (userId) {
       fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/user/${userId}`, {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         credentials: "include",
       })
         .then((res) => res.json())
@@ -58,7 +65,10 @@ export default function UserDetails() {
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/admin/users/${user.id}`,
         {
           method: "PATCH",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           credentials: "include",
           body: JSON.stringify({ status: newStatus }),
         },

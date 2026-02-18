@@ -40,7 +40,7 @@ import {
 import { Roles } from "@/constants/roles";
 import { adminRoutes, studentRoutes, tutorRoutes } from "@/routes/Routes";
 import { Route } from "@/types/routes.types";
-import { authClient } from "@/lib/auth-client";
+import { authClient, getSessionFromConsole } from "@/lib/auth-client";
 import { Button } from "./button";
 import {
   DropdownMenu,
@@ -66,16 +66,18 @@ const iconMap: Record<string, any> = {
 };
 
 export function AppSidebar({
-  user,
+  userInfo,
   ...props
 }: {
-  user: { role: "ADMIN" | "TUTOR" | "STUDENT"; name: string };
+  userInfo: { role: "ADMIN" | "TUTOR" | "STUDENT"; name: string };
 } & React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
   const router = useRouter();
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
   const { theme, setTheme } = useTheme();
+
+
   const handleSignOut = async () => {
     await authClient.signOut({
       fetchOptions: {
@@ -86,17 +88,17 @@ export function AppSidebar({
       },
     });
   };
-  const userRole = user?.role?.toUpperCase();
-  const routes = React.useMemo(() => {
-    console.log(user); //  localhost output{ "role": "TUTOR","name": "Jhankar Mahbub" } from dashboard layout but
 
+  const userRole = userInfo.role as "ADMIN" | "TUTOR" | "STUDENT" | "";
+
+  const routes = React.useMemo(() => {
     if (!userRole) return [];
     if (userRole === "ADMIN") return adminRoutes;
     if (userRole === "STUDENT") return studentRoutes;
     if (userRole === "TUTOR") return tutorRoutes;
-
-    return [];
   }, [userRole]);
+
+
   // 3. Handle the "Undefined" state visually
   if (!userRole) {
     return (

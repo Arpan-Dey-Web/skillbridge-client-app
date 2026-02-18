@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import { authClient } from "@/lib/auth-client";
 
 interface Booking {
   id: string;
@@ -53,7 +54,8 @@ export default function StudentBookingsClient({
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
+  const { data: session } = authClient.useSession();
+  const token = session?.session?.token;
   useEffect(() => {
     setBookings(initialBookings);
   }, [initialBookings]);
@@ -79,7 +81,10 @@ export default function StudentBookingsClient({
         `${process.env.NEXT_PUBLIC_BACKEND_URL}/api/reviews`,
         {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
           credentials: "include",
           body: JSON.stringify({
             bookingId: selectedBooking?.id,
